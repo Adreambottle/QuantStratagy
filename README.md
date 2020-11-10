@@ -1,6 +1,50 @@
 # Come and Have MeronPon
- 
-* 快来和我一起吃菠萝包吧！  
+
+
+### 遇到的问题
+* 感觉数据库的搭建出现了一点问题，正在解决
+* 关于模型的构建尚不是很清楚，不知道怎么打分，打分的模型有没有详细的画面
+* 因为我对因子的提取不是很上心，所以我还在研究因子因子怎么获取
+* 最好能把因子的数据直接告诉我
+
+### Reference List
+
+#### 1.关于多因子模型的pdf资料
+* 《1_多因子模型的基石--单因子有效性检验》
+* 《5_剔除行业、风格因素后的大类因子检验——因子选股系列研究之五》
+
+
+#### 2.talib 相关的文件
+* https://www.bookstack.cn/read/talib-zh/README.md
+* https://juejin.im/post/6844903934977376264
+
+#### 3.pyechart 数据可视化相关的
+* https://pyecharts.readthedocs.io/zh/latest/zh-cn/README/
+* https://github.com/pyecharts/pyecharts
+* https://cloud.tencent.com/developer/article/1388001
+* https://gallery.pyecharts.org/#/README
+
+#### 4.关于量化交易的代码框架资料
+* https://mp.weixin.qq.com/s/nCih0rdlyjTV35bOYcDu1w 【Python实现量价形态选股】
+* https://mp.weixin.qq.com/s/IguEpW9bT8NdnPIV_IyINg 【使用pyfinance进行证券收益分析】
+* 
+
+#### 5.关于MySQL数据库的构建与服务器云端存储
+* https://www.jianshu.com/p/28f59950a310 【MySQL数据库服务器搭建】
+* https://luoxin1992.github.io/2017/01/01/install-mysql-server/ 【搭建MySQL服务器
+】
+
+#### 6.关于优化提升与机器学习的算法改进
+* https://cloud.tencent.com/developer/article/1540683
+* https://bigquant.com/community/t/topic/162091
+* https://bigquant.com/community/t/topic/110508
+* https://xgboost.readthedocs.io/en/latest/ 【XGBoost】
+* https://www.cnblogs.com/wj-1314/p/9402324.html 【Python机器学习笔记：XgBoost算法】
+
+### Addition
+* 我们做完project我请大家吃菠萝包吧！
+
+* 快来和我一起吃菠萝包！  
 
 ![Image text](Plots_of_Daniel/113e20008e27ed68ff9c6.jpeg)
 
