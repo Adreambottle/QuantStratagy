@@ -75,6 +75,7 @@ class Data(object):
     def info_sql(self):
         pass #代码省略
 
+
 # 将交易数据储存在 MySQL 里面
 def store_daily_data():
     SC_in_pool = Stock_code_pool['Stock_Code']
@@ -408,6 +409,9 @@ Draw_Plots("000021.SZ").draw_amount_bar()
 #
 
 # 创建数据库
+
+import talib
+
 
 token = 'd44cbc9ab3e7c25e5dfcbe6437ac061b125395567ad582806d02d38c'
 pro = ts.pro_api(token)

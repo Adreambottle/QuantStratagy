@@ -11,3 +11,4 @@ data=Data()
 #data.save_sql() #只需运行一次即可
 data.update_sql()
 data.info_sql()
+
