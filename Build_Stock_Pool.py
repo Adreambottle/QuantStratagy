@@ -111,3 +111,53 @@ def store_daily_data():
         except:
             SC_unavailable.append(SC)
         count += 1
+
+
+
+# 从 MySQL 中读取一直股票的数据，并将股票的数据以 DataFrame 的形式导出
+
+class Read_One_Stock():
+
+    # 初始化数据，定义 MySQL 访问链接参数
+    def __init__(self, SC_Code):
+        self.conn = pymysql.connect(
+            host="localhost",
+            database="Stock",
+            user="root",
+            password="zzzzzzzz",
+            port=3306,
+            charset='utf8'
+        )
+        self.SC_Code = SC_Code
+
+    # 获取每天的收盘价
+    def select_close_data(self):
+        # 读取每天的收盘价
+        sqlcmd = "SELECT trade_date, close FROM`{}`".format(self.SC_Code)
+        table = pd.read_sql(sqlcmd, self.conn)
+        return table
+
+    # 获取每天的开盘价
+    def select_open_data(self):
+        # 读取每天的开盘价
+        sqlcmd = "SELECT trade_date, open FROM`{}`".format(self.SC_Code)
+        table = pd.read_sql(sqlcmd, self.conn)
+        return table
+
+    # 获取每天的交易数量
+    def select_vol_amount(self):
+        # 读取每天的交易数量
+        sqlcmd = "SELECT trade_date, open FROM`{}`".format(self.SC_Code)
+        table = pd.read_sql(sqlcmd, self.conn)
+        return table
+
+    # 获取想要获取的交易数据，可以自定义
+    def select_col(self, *args):
+        col_list = args
+        sqlcmd = "SELECT trade_date, "
+        for arg in args:
+            sqlcmd = sqlcmd + arg + ", "
+        sqlcmd = sqlcmd[:-2]
+        sqlcmd = sqlcmd + " FROM `{}`".format(self.SC_Code)
+        table = pd.read_sql(sqlcmd, self.conn)
+        return table

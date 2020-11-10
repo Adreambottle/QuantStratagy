@@ -1,8 +1,8 @@
 # Come and Have MeronPon
 
 
-### Meeting Documents 【From the 4th】
-#### 多因子策略
+### 一、Meeting Documents 【From the 4th】
+#### 1. 多因子策略
   * 选股
   * 多因子：日频 + 择时 **【换手率】**
   * 股票池：大板块
@@ -10,7 +10,7 @@
   * Qestion Remained
     * 是否要空仓
 
-#### 下一阶段任务
+#### 2. 下一阶段任务
   * 确定因子，大板块，交易频率
   * 数据获取
     * 时间：2005-01-01 - 2019-12-31
@@ -25,9 +25,20 @@
       * `Back Test`
     * code 组的同学可以学习调用相关的库以及 python 策略
 
+#### 3. 时间线
+
+| Time | Action |
+| :-: | :-- |
+| 11-13 | OPT考试结束 |
+| 11-15 | Start the Code 
+| | 准确的策略模型 |
+| | 策略的 report |
+| | 永辉超市 |
+
+
 -----------------------------------------------
 
-### Problem to be solved
+### 二、Problem to be solved
 
 #### PS：我觉得的我们的重心在两点模型的构建和因子的获取
 #### PS：大家记得收集资料和标记自己看过的内容，方便同学整理
@@ -41,7 +52,7 @@
 
 -----------------------------------------------
 
-### Research Report
+### 三、Research Report
 
 * link: https://shimo.im/docs/8qdRk6hxyrdcWx3T
 * 大家尽可能快点写，感觉时间不太够用了
@@ -51,7 +62,7 @@
 -----------------------------------------------
 
 
-### Reference List
+### 四、Reference List
 
 #### 1.关于多因子模型的pdf资料
 * 《1_多因子模型的基石--单因子有效性检验》
