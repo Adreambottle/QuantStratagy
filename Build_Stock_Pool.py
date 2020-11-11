@@ -161,3 +161,16 @@ class Read_One_Stock():
         sqlcmd = sqlcmd + " FROM `{}`".format(self.SC_Code)
         table = pd.read_sql(sqlcmd, self.conn)
         return table
+
+def select_stock_pool():
+    conn = pymysql.connect(
+        host="localhost",
+        database="Stock",
+        user="root",
+        password="zzzzzzzz",
+        port=3306,
+        charset='utf8'
+    )
+    sqlcmd = "SELECT * FROM `Stock_Pool`"
+    table = pd.read_sql(sqlcmd, conn)
+    return table

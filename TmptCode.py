@@ -60,6 +60,7 @@ class Data(object):
 
     #保存数据到数据库
     def save_sql(self):
+        pass
         # for code in self.codes:
         #     data = self.daily_data(code)
         #     data.to_sql(self.table_name, engine, index=False, if_exists = 'append')
@@ -178,7 +179,7 @@ class Join_Table():
             join_table = pd.merge(join_table, Stock_data, how='outer', on="trade_date")
         return join_table
 
-    def join_others:
+    def join_others(self):
         pass
 
 

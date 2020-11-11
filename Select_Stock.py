@@ -1,6 +1,4 @@
-
-
-
+import datetime
 
 
 
@@ -27,17 +25,16 @@ def get_price_vol_data():
 def find_price_vol_stock(n,r=1.2):
 
     codes,all_data=get_price_vol_data()
-
     up_list=[]
     for code in codes:
-        close=all_data['adjclose'][code]
-        open_=all_data['adjopen'][code]
-        high=all_data['adjhigh'][code]
-        low=all_data['adjlow'][code]
-        vol=all_data['adjvol'][code]
+        close = all_data['adjclose'][code]
+        open_= all_data['adjopen'][code]
+        high = all_data['adjhigh'][code]
+        low = all_data['adjlow'][code]
+        vol = all_data['adjvol'][code]
         #剔除一字涨停
         flag=True
-        if close.iloc[-1]==open_.iloc[-1]==high.iloc[-1]==low.iloc[-1]:
+        if close.iloc[-1] == open_.iloc[-1]==high.iloc[-1]==low.iloc[-1]:
             flag=False
             break
         #最近五日没有长上影线,以单日回撤3%为长上影线
