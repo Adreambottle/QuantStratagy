@@ -51,6 +51,7 @@ data = Read_One_Stock("000021.SZ").select_close_data()
 data = change_stock_2(data)
 data = data.sort_index()
 
+# data.insert(2, "test", list(map(lambda x : x**2, data["close"].to_list())))
 
 data
 plot_acf(data).show()
@@ -62,27 +63,63 @@ plot_pacf(data).show()
 
 
 
-# 动态加权的函数
+"""
+动态加权的函数
+n 是我们在计算动态加权的选择范围，默认选择 n = 10
+为了在数据长度没有超过选择范围的时候仍然能够适应改函数，所以取数据长度和键入值中较小的值
+power 是关于期差 j 的多次项的函数指数， 建议取 [0, 2] 的区间内，默认是1
+这里只考虑函数是多次项函数的形式
+"""
+def Moving_weight(df, n = 10, power = 1):
 
-def Moving_weight(df:pd.DataFrame, n = 10):
+    # df = data["close"]
     new_obj_value_list = []
-    for i in range(df.shape[1]):
-        if df.shape[i] >= n:
-            weight = np.array(list(range(1, n+1))) / sum(list(range(1, n+1)))
-            data_n = np.array(data.tail(n))
-            obj_value = weight.dot(data_n)[0]
-        else:
-            n = df.shape[i]
-            weight = np.array(list(range(1, n + 1))) / sum(list(range(1, n + 1)))
-            data_n = np.array(data.tail(n))
-            obj_value = weight.dot(data_n)[0]
+
+    # 我们用到的真实值是建入值和 DataFrame 长度中较为小的那个
+    num = min(n, df.shape[0])
+
+    if isinstance(df, pd.Series):
+        # i = 0
+        # 设置元期差和经过权重函数变化后的期差数据
+        meta_data = list(range(1, num + 1))
+        func_data = list(map(lambda x: x ** power, meta_data))
+
+        # 获取最终的权重向量
+        weight = np.array(func_data) / sum(func_data)
+
+        # 获取位于数据最后n位的部分
+
+        data_n = np.array(df.tail(num))
+
+        # 用权重向量和数据尾部点乘得到最终期望值
+        obj_value = weight.dot(data_n)
+
         new_obj_value_list.append(obj_value)
+
+    elif isinstance(df, pd.DataFrame):
+        for i in range(df.shape[1]):
+
+            # i = 0
+            # 设置元期差和经过权重函数变化后的期差数据
+            meta_data = list(range(1, num + 1))
+            func_data = list(map(lambda x : x**power, meta_data))
+
+            # 获取最终的权重向量
+            weight = np.array(func_data) / sum(func_data)
+
+            # 获取位于数据最后n位的部分
+
+            data_n = np.array(df.iloc[:,i].tail(num))
+
+            # 用权重向量和数据尾部点乘得到最终期望值
+            obj_value = weight.dot(data_n)
+
+            new_obj_value_list.append(obj_value)
+
     return new_obj_value_list
 
-ARIMA()
 
-
-
+Moving_weight(data["close"])
 
 
 # 进行实践序列分析
