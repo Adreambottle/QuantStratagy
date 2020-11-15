@@ -21,8 +21,6 @@ factor_table = pd.DataFrame({"factor1":factor1,
                              "factor2":factor2,
                              "factor3":factor3})
 
-
-
 # 新建portfolio（股票data），假设100只股票，1000天的数据
 stock = np.random.normal(size=(100, 1000))
 stock_table = pd.DataFrame(stock)
@@ -79,16 +77,9 @@ plt.plot(f)
 
 
 
+
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     print('PyCharm')
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
-
-y = 2 * np.array(range(100)) + np.random.normal(100)
-x = range(100)
-x_new = np.array(x)
-y_new = pd.Series(y)
-x_new = pd.DataFrame({"x":x})
-model = LinearRegression()
-model.fit(x_new.reshape(-1, 1), y)

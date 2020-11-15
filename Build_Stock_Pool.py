@@ -36,21 +36,45 @@ class Data(object):
         return cals
 
     #每日行情数据
-    def daily_data(self,code):
+    def daily_data(self, code):
         try:
+            # 获取每日交易数据
             df0 = pro.daily(ts_code = code, start_date = self.start, end_date = self.end)
-            df1 = pro.adj_factor(ts_code = code, trade_date = '')
-            #复权因子
-            df = pd.merge(df0, df1)  #合并数据
+
+            # 获取每日指标
+            df1 = pro.daily_basic(ts_code = code, start_date = self.start, end_date = self.end)
+
+            # 获取复权行情
+            df2 = pro.pro_bar(ts_code = code, start_date = self.start, end_date = self.end)
+
+            # 获取复权因子
+            df3 = pro.adj_factor(ts_code = code, start_date = self.start, end_date = self.end)
+
+            df = pd.merge(df0, df1, df2, df3)  #合并数据
+
+            return df
 
         except Exception as e:
-            print(code)
+            print(code + " is failed!")
             print(e)
-        return df
+
+
 
     #保存数据到数据库
-    def save_sql(self):
-       pass
+    def finance_data(self, code):
+        try:
+            # 获取每日交易数据
+            df0 = pro.income(ts_code = code, start_date = self.start, end_date = self.end,
+                             fields='ts_code,ann_date,f_ann_date,end_date,report_type,comp_type,basic_eps,diluted_eps')
+            df1 = pro.cashflow(ts_code = code, start_date = self.start, end_date = self.end)
+
+            df = pd.merge(df0, df1)  #合并数据
+
+            return df
+
+        except Exception as e:
+            print(code + " is failed!")
+            print(e)
 
 
     #获取最新交易日期
@@ -99,6 +123,10 @@ def store_daily_data():
     Stock_code_df = pd.DataFrame({"Stock_name": Stock_code})
 
     count = 0
+
+
+    # 将每日数据储存到SQL中
+
     for SC in SC_in_pool:
         print("This is the {} and the code is {}.".format(count, SC))
 
@@ -111,6 +139,28 @@ def store_daily_data():
         except:
             SC_unavailable.append(SC)
         count += 1
+
+
+
+
+
+    # 将财务数据储存在SQL中
+
+    for SC in SC_in_pool:
+        print("This is the {} and the code is {}.".format(count, SC))
+
+        # 将所有在股票池中的数据储存在 MySQL 中
+        try:
+            tmp_data = Stock_data.finance_data(SC)
+            pd.io.sql.to_sql(tmp_data, SC, con=conn, schema='Finance', if_exists='append')
+
+        # 如果访问失败，将数据储存在 SC_unavailable 的列表中
+        except:
+            SC_unavailable.append(SC)
+        count += 1
+
+
+
 
 
 
