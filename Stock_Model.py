@@ -121,95 +121,79 @@ from statsmodels.tsa.stattools import adfuller as ADF  #平稳性检测
 from statsmodels.graphics.tsaplots import plot_pacf    #偏自相关图
 from statsmodels.stats.diagnostic import acorr_ljungbox    #白噪声检验
 from statsmodels.tsa.arima_model import ARIMA
+from arch import arch_model
+
+# import warnings
+# warnings.filterwarnings('ignore', 'statsmodels.tsa.arima_model.ARMA',
+#                         FutureWarning)
+# warnings.filterwarnings('ignore', 'statsmodels.tsa.arima_model.ARIMA',
+#                         FutureWarning)
 
 
 
-# 进行实践序列分析
+"""
+进行时间序列分析
+分为检验和用Arch 模型进行预测两部分
+"""
 def time_series_analysis(data):
+
     # 需要data是一个时间序列，我觉得这样是最好的
-
-
     # 用折线图查看data
-    data.plot(figsize=(15, 5))
-
-    # # 计算data的一阶差分，查看相关的图像
-    # data_diff = data.diff()
-    # data_diff.plot(figsize=(15, 5))
-    #
-    # # 计算data的二阶差分
-    # data_diff_2 = data_diff.diff()
-    # data_diff_2.plot(figsize=(15, 5))
-
-
 
     t = sm.tsa.stattools.adfuller(data)  # ADF检验
     print("p-value: ", t[1])
     # p-value小于显著性水平，因此序列是平稳的
 
-
-    # 对matplotlib的配置进行设置，只有一个子区域
-    fig = plt.figure(figsize=(15, 10))
+    # 对matplotlib的配置进行设置
+    fig = plt.figure(figsize=(15, 8))
     ax1 = fig.add_subplot(211)
     ax2 = fig.add_subplot(212)
 
-    fig = sm.graphics.tsa.plot_acf(data, lags=20, ax=ax1)
-    fig = sm.graphics.tsa.plot_pacf(data, lags=20, ax=ax2)
+
+    # 画出原图
+    ax1.plot(data)
+
+    # 计算data的一阶差分，查看相关的图像
+    data_diff = data.diff()
+    ax2.plot(data_diff)
+
+    # # 计算data的二阶差分
+    # data_diff_2 = data_diff.diff()
+    # data_diff_2.plot(figsize=(15, 5))
+
+
+    fig2 = plt.figure(figsize=(15, 8))
+    ax3 = fig2.add_subplot(211)
+    ax4 = fig2.add_subplot(212)
+
+    # 画出不同order的ACF和PACF两张与
+    fig2 = sm.graphics.tsa.plot_acf(data, lags=20, ax=ax3)
+    fig2 = sm.graphics.tsa.plot_pacf(data, lags=20, ax=ax4)
     plt.show()
 
-    train_results = sm.tsa.arma_order_select_ic(data, ic=['aic', 'bic'], trend='nc', max_ar=8, max_ma=8)
-    train = sm.tsa.arma_order_select_ic()
-    print('AIC', train_results.aic_min_order)
-
-    # 开始构建 ARIMA 模型
-    order = (10, 0, 0)
-    model = sm.tsa.ARIMA(data, order).fit()
-    at = data - model.fittedvalues
-    at2 = np.square(at)
-
-    plt.figure(figsize=(10, 6))
-    plt.subplot(211)
-    plt.plot(at, label='at')
-    plt.legend()
-    plt.subplot(212)
-    plt.plot(at2, label='at^2')
-    plt.legend(loc=0)
-
-    # 序列进行混成检验
-    m = 25  # 我们检验25个自相关系数
-    acf, q, p = sm.tsa.acf(at2, nlags=m, qstat=True)  ## 计算自相关系数 及p-value
-    out = np.c_[range(1, 26), acf[1:], q, p]
-    output = pd.DataFrame(out, columns=['lag', "AC", "Q", "P-value"])
-    output = output.set_index('lag')
-    output
-    # p-value小于显著性水平0.05，我们拒绝原假设，即认为序列具有相关性。因此具有ARCH效应。
-    # ARCH模型的阶次
-
-    train = data[:-10]
-    test = data[-10:]
-    am = arch.arch_model(train, mean='AR', lags=9, vol='GARCH')
-    res = am.fit()
-    res.summary()
-    res.params
-    res.plot()
-    plt.plot(data)
-    res.hedgehog_plot()
 
 
+from pmdarima import auto_arima
 
-Moving_weight(data)
-data = Read_One_Stock("000021.SZ").select_close_data()
+def pred_by_auto_arima(data):
+
+    model = auto_arima(data, trace=True, error_action='ignore', suppress_warnings=True)
+    model.fit(data)
+
+    forecast = model.predict(n_periods=1)
 
 
-datan.loc["date"] = pd.to_datetime(datan["trade_date"], format = '%Y%m%d')
+def pred_by_arch(data):
 
-fig = plt.figure()
-ax = plt.axes()
-ax.plot(data.date, data.close)
+    # 计算最大的自相关order
+    lags = sm.tsa.acf(data, nlags=20)[1:].tolist()
+    max_lag_index = lags.index(max(lags)) + 1
 
-plt.show()
+    model = sm.tsa.ARIMA()
 
-pd.to_datetime(datan["trade_date"], format = '%Y%m%d')
+    model = arch_model(data, mean='AR', vol='ARCH', p=max_lag_index)
+    model_fit = model.fit(show_warning=False, )
+    yhat = model_fit.forecast(horizon=1)
+    yhat.variance.values[-1, :]
 
-datan["trade_datedata"]
-datetime.strptime(datan["trade_date"], '%Y%m%d')
 
