@@ -1,11 +1,11 @@
-import talib
+import T_talib
 import tushare
 from pyecharts.charts import Line, Kline, Bar, Overlap, Grid
 
 # get 300ETF from tushare
 data = tushare.get_k_data('600519', ktype='D', autype='None', start='2015-01-01', end='2018-07-01')
 # 计算并画出cci
-cci = talib.CCI(data['high'].values, data['low'].values, data['close'].values, timeperiod=14)
+cci = T_talib.CCI(data['high'].values, data['low'].values, data['close'].values, timeperiod=14)
 # 简单的一个择时策略，当cci>50则持仓，当cci<50则空仓
 position = [50 if idx >= 50 else 0 for idx in cci]
 

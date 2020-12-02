@@ -13,9 +13,9 @@
     #### * 
     
     $$ R_i = X_if_i + u_i$$
-    $$ Xi = $$
+    $$ Xi  $$
     $$ f_i = \sum_{j = 0}^{10} w_jf_j$$
-    $$ w_j = \frac{c(j)}{\sum_{ = 0}^{10}c(j)}, \space c(j) = j$$
+    $$ w_j = \frac{c(j)}{\sum_{ = 0}^{10}c(j)}, \space c(j) = j^{\frac{1}{2}}$$
     
 
 #### 2. 下一阶段任务

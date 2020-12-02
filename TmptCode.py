@@ -411,7 +411,7 @@ Draw_Plots("000021.SZ").draw_amount_bar()
 
 # 创建数据库
 
-import talib
+import T_talib
 
 
 token = 'd44cbc9ab3e7c25e5dfcbe6437ac061b125395567ad582806d02d38c'

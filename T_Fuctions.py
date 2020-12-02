@@ -67,16 +67,6 @@ for i in range(100):
     lr.fit(np.array(range(date_num)).reshape(-1, 1), stock[i,:])
     lr_list.append(lr)
 
-a = np.array([1, 2, 3])
-b = np.array([[1, 2, 3]])
-
-
-fig = plt.figure()
-ax1 = fig.add_subplot(1, 1, 1)
-plt.plot(f)
-
-
-
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':

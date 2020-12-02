@@ -4,19 +4,12 @@ import matplotlib.pyplot as plt
 import statsmodels.api as sm
 from datetime import  datetime
 import seaborn as sns
-from statsmodels.graphics.tsaplots import plot_acf  #自相关图
-from statsmodels.tsa.stattools import adfuller as ADF  #平稳性检测
-from statsmodels.graphics.tsaplots import plot_pacf    #偏自相关图
-from statsmodels.stats.diagnostic import acorr_ljungbox    #白噪声检验
-from statsmodels.tsa.arima_model import ARIMA
+
 from Build_Stock_Pool import Read_One_Stock
 import arch
 
-# plt.rcParams['font.sans-serif'] = ['SimHei'] #用来正常显示中文标签
-# plt.rcParams['axes.unicode_minus'] = False #用来正常显示负号
-# pylab.rcParams['figure.figsize'] = (10, 6)   #设置输出图片大小
-sns.set(color_codes=True) #seaborn设置背景
 
+sns.set(color_codes=True) #seaborn设置背景
 
 # fig = plt.figure()
 # ax = plt.axes()
@@ -50,12 +43,9 @@ def change_stock_2(df:pd.DataFrame):
 data = Read_One_Stock("000021.SZ").select_close_data()
 data = change_stock_2(data)
 data = data.sort_index()
+data = data["close"]
 
 # data.insert(2, "test", list(map(lambda x : x**2, data["close"].to_list())))
-
-data
-plot_acf(data).show()
-plot_pacf(data).show()
 
 
 
@@ -119,22 +109,92 @@ def Moving_weight(df, n = 10, power = 1):
     return new_obj_value_list
 
 
-Moving_weight(data["close"])
+Moving_weight(data)
+
+data_old = data
+data = data_old.diff()[1:]
+
+
+
+from statsmodels.graphics.tsaplots import plot_acf  #自相关图
+from statsmodels.tsa.stattools import adfuller as ADF  #平稳性检测
+from statsmodels.graphics.tsaplots import plot_pacf    #偏自相关图
+from statsmodels.stats.diagnostic import acorr_ljungbox    #白噪声检验
+from statsmodels.tsa.arima_model import ARIMA
+
 
 
 # 进行实践序列分析
 def time_series_analysis(data):
+    # 需要data是一个时间序列，我觉得这样是最好的
 
-    # 进行ADF检验
-    # p-value小于显著性水平，因此序列是平稳的，接下来我们建立AR(p)模型，先判定阶次
+
+    # 用折线图查看data
+    data.plot(figsize=(15, 5))
+
+    # # 计算data的一阶差分，查看相关的图像
+    # data_diff = data.diff()
+    # data_diff.plot(figsize=(15, 5))
+    #
+    # # 计算data的二阶差分
+    # data_diff_2 = data_diff.diff()
+    # data_diff_2.plot(figsize=(15, 5))
+
+
+
     t = sm.tsa.stattools.adfuller(data)  # ADF检验
     print("p-value: ", t[1])
+    # p-value小于显著性水平，因此序列是平稳的
 
-    # fig = plt.figure(figsize=(20, 5))
-    # ax1 = fig.add_subplot(111)
-    # fig = plot_pacf(data, lags=20, ax=ax1)
 
-    sm.tsa.stattools.pacf(data, nlags=24)
+    # 对matplotlib的配置进行设置，只有一个子区域
+    fig = plt.figure(figsize=(15, 10))
+    ax1 = fig.add_subplot(211)
+    ax2 = fig.add_subplot(212)
+
+    fig = sm.graphics.tsa.plot_acf(data, lags=20, ax=ax1)
+    fig = sm.graphics.tsa.plot_pacf(data, lags=20, ax=ax2)
+    plt.show()
+
+    train_results = sm.tsa.arma_order_select_ic(data, ic=['aic', 'bic'], trend='nc', max_ar=8, max_ma=8)
+    train = sm.tsa.arma_order_select_ic()
+    print('AIC', train_results.aic_min_order)
+
+    # 开始构建 ARIMA 模型
+    order = (10, 0, 0)
+    model = sm.tsa.ARIMA(data, order).fit()
+    at = data - model.fittedvalues
+    at2 = np.square(at)
+
+    plt.figure(figsize=(10, 6))
+    plt.subplot(211)
+    plt.plot(at, label='at')
+    plt.legend()
+    plt.subplot(212)
+    plt.plot(at2, label='at^2')
+    plt.legend(loc=0)
+
+    # 序列进行混成检验
+    m = 25  # 我们检验25个自相关系数
+    acf, q, p = sm.tsa.acf(at2, nlags=m, qstat=True)  ## 计算自相关系数 及p-value
+    out = np.c_[range(1, 26), acf[1:], q, p]
+    output = pd.DataFrame(out, columns=['lag', "AC", "Q", "P-value"])
+    output = output.set_index('lag')
+    output
+    # p-value小于显著性水平0.05，我们拒绝原假设，即认为序列具有相关性。因此具有ARCH效应。
+    # ARCH模型的阶次
+
+    train = data[:-10]
+    test = data[-10:]
+    am = arch.arch_model(train, mean='AR', lags=9, vol='GARCH')
+    res = am.fit()
+    res.summary()
+    res.params
+    res.plot()
+    plt.plot(data)
+    res.hedgehog_plot()
+
+
 
 Moving_weight(data)
 data = Read_One_Stock("000021.SZ").select_close_data()
