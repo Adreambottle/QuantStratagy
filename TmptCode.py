@@ -91,6 +91,22 @@ def store_daily_data():
             SC_unavailable.append(SC)
         count += 1
 
+import tushare as ts
+import pandas as pd
+token = "d44cbc9ab3e7c25e5dfcbe6437ac061b125395567ad582806d02d38c"
+pro = ts.pro_api(token)
+code = "000021.SZ"
+start = '20050101'
+end = '20200101'
+df0 = pro.daily(ts_code=code, start_date=start, end_date=end)
+df0 = pro.income(ts_code=code, start_date=start, end_date=end)
+                             fields='ts_code,ann_date,f_ann_date,end_date,report_type,comp_type,basic_eps,diluted_eps')
+df0 = pro.income(ts_code=code, start_date=start, end_date=end)
+
+import pandas as pd
+print(pd.date_range(start='2019-1-09',periods=24,freq='H'))
+index = pd.date_range(start, end, freq='D')
+
 
 
 # 从 MySQL 中读取数据
@@ -441,3 +457,12 @@ store_daily_data()
 # cursor = connection.cursor()
 # cursor.execute("select * from student;")
 # cursor.fetchmany(10)
+
+from multiprocessing import Pool
+
+def f(x):
+    return x*x
+
+if __name__ == '__main__':
+    with Pool(5) as p:
+        print(p.map(f, [1, 2, 3]))

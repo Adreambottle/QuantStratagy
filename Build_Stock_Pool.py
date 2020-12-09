@@ -14,7 +14,7 @@ pymysql.install_as_MySQLdb()
 # 爬取数据库
 class Data(object):
     def __init__(self,
-                 start ='20050101',
+                 start ='20100101',
                  end ='20200101',
                  table_name = 'daily_data'):
         self.start = start
