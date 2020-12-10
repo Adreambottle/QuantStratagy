@@ -97,8 +97,6 @@ class Factor_Data(object):
             print(self.code + " is failed!")
             print(e)
 
-
-
     # 指数每日行情数据
     def get_index_daily_data(self):
         """
@@ -180,7 +178,6 @@ class Factor_Data(object):
             df0.index = df0["end_date"]
             df0.sort_index(inplace=True)
 
-
             """
             # df1  ==>  fina_indicator
             # 财务指标数据
@@ -202,7 +199,6 @@ class Factor_Data(object):
             df1.index = df1["end_date"]
             df1.sort_index(inplace=True)
 
-
             """
             # df2  ==>  cashflow
             # 现金流量表
@@ -219,7 +215,6 @@ class Factor_Data(object):
                                              format='%Y%m%d')
             df2.index = df2["end_date"]
             df2.sort_index(inplace=True)
-
 
             """
             # df3  ==>  balancesheet
@@ -250,9 +245,11 @@ class Factor_Data(object):
             print(self.code + " is failed!")
             print(e)
 
+    """
+    计算因子，并且拼合在 self.factor 上
+    """
 
-
-    # 收益率因子  动量因子
+    # 动量因子
     def fa_monthly_return(self):
         """
         计算个股N个月的收益率
@@ -300,7 +297,7 @@ class Factor_Data(object):
         self.factors = pd.merge(self.factors, df_tmpt, how='outer',
                                 left_index=True, right_index=True)
 
-    #个股最近N个月内日均换手率
+    # 换手率因子
     def fa_turnover(self):
         """
         个股最近N个月内日均换手率
@@ -336,30 +333,37 @@ class Factor_Data(object):
 
         year_avg_turnover = df_daily_basic.resample('Y', on='trade_date').mean()  # 最近一年内日均换手率
         df_tmpt = pd.merge(mon_avg_turnover, mon3_avg_turnover, how='outer',
-                                left_index=True, right_index=True)
+                           left_index=True, right_index=True)
         df_tmpt = pd.merge(df_tmpt, mon6_avg_turnover, how='outer',
-                                left_index=True, right_index=True)
+                           left_index=True, right_index=True)
         df_tmpt = pd.merge(df_tmpt, year_avg_turnover, how='outer',
-                                left_index=True, right_index=True)
+                           left_index=True, right_index=True)
 
         df_tmpt = df_tmpt.fillna(method='bfill')
         df_tmpt.columns = ["turnover_rate_M", "turnover_rate_3M", "turnover_rate_6M", "turnover_rate_Y"]
 
-        df_tmpt["wgt_turn_1m"] = df_tmpt["turnover_rate_M"]/df_tmpt["turnover_rate_Y"]
-        df_tmpt["wgt_turn_3m"] = df_tmpt["turnover_rate_3M"]/df_tmpt["turnover_rate_Y"]
-        df_tmpt["wgt_turn_6m"] = df_tmpt["turnover_rate_6M"]/df_tmpt["turnover_rate_Y"]
+        df_tmpt["wgt_turn_1m"] = df_tmpt["turnover_rate_M"] / df_tmpt["turnover_rate_Y"]
+        df_tmpt["wgt_turn_3m"] = df_tmpt["turnover_rate_3M"] / df_tmpt["turnover_rate_Y"]
+        df_tmpt["wgt_turn_6m"] = df_tmpt["turnover_rate_6M"] / df_tmpt["turnover_rate_Y"]
 
-        self.factors = pd.merge(self.factors, df_tmpt.iloc[:,-3:], how='outer',
+        self.factors = pd.merge(self.factors, df_tmpt.iloc[:, -3:], how='outer',
                                 left_index=True, right_index=True)
 
-
     def fa_daily_return(self):
+        """
+        月度营收率
+        因子：
+            daily_return_1m
+            daily_return_3m
+            daily_return_6m
+            daily_return_12m
+        :return:
+        """
         df_daily = self.daily_data.loc[:, ["trade_date", "close", "pre_close"]].copy()
         # df_daily = daily_data.loc[:, ["trade_date", "close", "pre_close"]].copy()
         daily_return = pd.DataFrame(df_daily['close'] - df_daily['pre_close'])
         daily_return.columns = ["daily_return"]
         daily_return["trade_date"] = df_daily["trade_date"]
-        # 因为袁老师的原因 这些代码要修改
 
         daily_return_1m = daily_return.resample('M', on='trade_date').mean()
         daily_return_3m = daily_return.resample('3M', on='trade_date').mean()
@@ -377,14 +381,15 @@ class Factor_Data(object):
         self.factors = pd.merge(self.factors, df_tmpt, how='outer',
                                 left_index=True, right_index=True)
 
+    # 波动率因子
     def fa_std_Nm(self):
         """
         std_Nm
         普通波动率：个股最近N个月内日的标准差
-        std_1m
-        std_3m
-        std_6m
-        std_12m
+        因子: std_1m
+             std_3m
+             std_6m
+             std_12m
 
         :return: 添加以上因子
         """
@@ -435,11 +440,10 @@ class Factor_Data(object):
         """
         id_std_Nm
         特质波动率：个股最近N个月内日收益率对沪深300收益率序列进行一元线性回归的残差的标准差
-        id_std_1m
-        id_std_3m
-        id_std_6m
-        id_std_12m
-
+        因子: id_std_1m
+             id_std_3m
+             id_std_6m
+             id_std_12m
         :return: 添加以上因子
         """
         df_daily = self.daily_data.loc[:, ["trade_date", "close", "pre_close"]].copy()
@@ -471,14 +475,15 @@ class Factor_Data(object):
         self.factors = pd.merge(self.factors, df_tmpt, how='outer',
                                 left_index=True, right_index=True)
 
-    # 小罗老师的情绪因子
+    # 情绪因子
     def fa_turnover_volatility(self):
         """
         换手率想对波动率
-        turnover_vol_5d
-        turnover_vol_20d
-        turnover_vol_100d
-        :return:
+        因子：
+            turnover_vol_5d
+            turnover_vol_20d
+            turnover_vol_100d
+        :return:添加以上因子
         """
         df_daily_basic = self.daily_data.loc[:, ["trade_date", "turnover_rate"]].copy()
         df_daily_basic["turnover_vol_5d"] = df_daily_basic["turnover_rate"].rolling(5, axis=0).std()
@@ -493,8 +498,11 @@ class Factor_Data(object):
         """
         N日成交量标准差
         VSTD N
-
-        :return:
+        因子：
+            VSTD_6d
+            VSTD_30d
+            VSTD_100d
+        :return:添加以上因子
         """
         df_daily_basic = self.daily_data.loc[:, ["trade_date", "amount"]].copy()
         df_daily_basic["VSTD_6d"] = df_daily_basic["amount"].rolling(5, axis=0).std()
@@ -505,35 +513,71 @@ class Factor_Data(object):
         self.factors = pd.merge(self.factors, df_tmpt, how='outer',
                                 left_index=True, right_index=True)
 
-    # 5日平均换手率/120日平均换手率
-    def fa_DAVOL5(self):
+    def fa_DAVOL_N(self):
         """
-        DAVOL5
-        5日平均换手率与120日平均换手率
-        5日平均换手率 / 120日平均换手率
-
-        :return:
+        DAVOLN
+        5日平均换手率 与 120日平均换手率 的比
+        因子：
+            DAVOL5
+            DAVOL20
+            DAVOL100
+        :return:添加以上因子
         """
         df_daily_basic = self.daily_data.loc[:, ["turnover_rate"]].copy()
 
         df_daily_basic["turnover_rate_5D"] = df_daily_basic["turnover_rate"].rolling(5, axis=0).mean()
-        df_daily_basic["turnover_rate_120D"] = df_daily_basic["turnover_rate"].rolling(120, axis=0).std()
-        df_daily_basic["DAVOL5"] = df_daily_basic["turnover_rate_5D"] / df_daily_basic["turnover_rate_120D"]
+        df_daily_basic["turnover_rate_20D"] = df_daily_basic["turnover_rate"].rolling(20, axis=0).mean()
+        df_daily_basic["turnover_rate_100D"] = df_daily_basic["turnover_rate"].rolling(100, axis=0).mean()
+        df_daily_basic["turnover_rate_120D"] = df_daily_basic["turnover_rate"].rolling(120, axis=0).mean()
 
-        df_tmpt = df_daily_basic.iloc[:, -1:]
+        df_daily_basic["DAVOL5"] = df_daily_basic["turnover_rate_5D"] / df_daily_basic["turnover_rate_120D"]
+        df_daily_basic["DAVOL20"] = df_daily_basic["turnover_rate_20D"] / df_daily_basic["turnover_rate_120D"]
+        df_daily_basic["DAVOL100"] = df_daily_basic["turnover_rate_100D"] / df_daily_basic["turnover_rate_120D"]
+
+        df_tmpt = df_daily_basic.iloc[:, -3:]
 
         self.factors = pd.merge(self.factors, df_tmpt, how='outer',
                                 left_index=True, right_index=True)
 
+    # 财务因子
     def fa_fin_fat(self):
-        df_finance = self.finance_data.loc[:, ["roe", "opincome_of_ebt", "ocf_to_or",
-                                               "currentdebt_to_debt", "current_ratio", "assets_turn"]].copy()
+        """
+        添加财务因子
+        因子：
+            roe 单季度ROE
+            opincome_of_ebt      单季度经营活动净收益/利润总额
+            ocf_to_or            单季度经营现金净流量/营业收入
+            currentdebt_to_debt  流动负债/负债合计
+            current_ratio        流动比率
+            assets_turn          总资产周转率
+
+        :return:添加以上因子
+        """
+        df_finance = self.finance_data.loc[:, ["roe",
+                                               "opincome_of_ebt",
+                                               "ocf_to_or",
+                                               "currentdebt_to_debt",
+                                               "current_ratio",
+                                               "assets_turn"]].copy()
 
         self.factors = pd.merge(self.factors, df_finance, how='outer',
                                 left_index=True, right_index=True)
 
+    # 成长因子
     def fa_grow_fat(self):
-
+        """
+        添加成长因子
+        因子:
+            roe_q               当季ROE同比增长率
+            n_income_attr_p     当季净利润
+            n_income_attr_p_q   当季净利润同比增长率
+            revenue             当季营业收入
+            revenue_q           当季营业收入同比增长率
+            n_cashflow_act      当季经营性现金流
+            n_cashflow_act_q    当季经营性现金流同比增长率
+        :return:添加以上因子
+        """
+        # 获取 roe roe_q
         roe = self.pro.fina_indicator(ts_code=self.code,
                                       start_date=self.start,
                                       end_date=self.end,
@@ -546,6 +590,7 @@ class Factor_Data(object):
         self.factors = pd.merge(self.factors, roe["roe_q"], how='outer',
                                 left_index=True, right_index=True)
 
+        # 获取 n_income_attr_p, n_income_attr_p_q, revenue, revenue_q
         pd_income = self.pro.income(ts_code=self.code,
                                     start_date=self.start,
                                     end_date=self.end,
@@ -555,12 +600,13 @@ class Factor_Data(object):
                                                format='%Y%m%d')
         pd_income.index = pd_income["end_date"]
         pd_income.sort_index(inplace=True)
+        pd_income["revenue_q"] = pd_income["revenue"].pct_change(periods=1)
         pd_income["n_income_attr_p_q"] = pd_income["n_income_attr_p"].pct_change(periods=1)
-        pd_income["income_revenue_q"] = pd_income["revenue"].pct_change(periods=1)
 
-        self.factors = pd.merge(self.factors, pd_income.iloc[:, -2:], how='outer',
+        self.factors = pd.merge(self.factors, pd_income.iloc[:, -4:], how='outer',
                                 left_index=True, right_index=True)
 
+        # 获取 n_cashflow_act, n_cashflow_act_q
         pd_cashflow = self.pro.cashflow(ts_code=self.code,
                                         start_date=self.start,
                                         end_date=self.end,
@@ -570,15 +616,26 @@ class Factor_Data(object):
         pd_cashflow.index = pd_cashflow["end_date"]
         pd_cashflow.sort_index(inplace=True)
         pd_cashflow["n_cashflow_act_q"] = pd_cashflow["n_cashflow_act"].pct_change(periods=1)
-        self.factors = pd.merge(self.factors, pd_cashflow["n_cashflow_act_q"], how='outer',
+        self.factors = pd.merge(self.factors, pd_cashflow.iloc[:, -2:], how='outer',
                                 left_index=True, right_index=True)
 
-    # 帆姐的奇怪因子
+    def fa_ProfitGrowth_YOY(self):
+        """
+        因子：
+            ProfitGrowth_YOY
+            净利润增长率（季度同比）
+        :return: 添加以上因子
+        """
+        df_finance = self.finance_data["q_profit_yoy"].copy()
+        self.factors = pd.merge(self.factors, df_finance, how='outer',
+                                left_index=True, right_index=True)
+
+    # 估值因子
     def fa_BP_LF(self):
         """
         最近财报的净资产 / 总市值
         BP_LF
-        :return:
+        :return: 添加以上因子
         """
         df_daily_basic = self.daily_data.loc[:, ["total_mv"]].copy()
         df_finance = self.finance_data.loc[:, ["total_assets", "total_liab"]].copy()
@@ -594,50 +651,57 @@ class Factor_Data(object):
         self.factors = pd.merge(self.factors, df_tmpt["BP_LF"], how='outer',
                                 left_index=True, right_index=True)
 
-    # 这部分是帆姐和子月的
-    def fa_EBIT2EV(self):
+    def fa_appraisement(self):
         """
-        EBIT2EV
-        过去12个月息税前利润/总市值
-
-
         Value Factor（估值因子)
 
-        OCFP：经营现金流(TTM)/总市值
-        经营现金流：pro.fina_indicator [“ocfps”]
-        总市值：pro.daily_basic [“total_mv”]
+        因子：
+            EBIT2EV
+            过去12个月息税前利润/总市值
+
+            OCFP：经营现金流/总市值
+            经营现金流：pro.fina_indicator [“ocfps”]
+            总市值：pro.daily_basic [“total_mv”]
 
 
-        SP：营业收入(TTM)/总市值
-        营业收入：pro.income [“revenue”]
-        总市值：pro.daily_basic [“total_mv”]
+            SP：营业收入/总市值
+            营业收入：pro.income [“revenue”]
+            总市值：pro.daily_basic [“total_mv”]
 
 
-        NCFP：净现金流(TTM)/总市值
-        净现金流：pro.cashflow [“n_cashflow_act”]
-        总市值：pro.daily_basic [“total_mv”]
+            NCFP：净现金流/总市值
+            净现金流：pro.cashflow [“n_cashflow_act”]
+            总市值：pro.daily_basic [“total_mv”]
 
 
-        DP：近 12 个月现金红利(按除息日计)/总市值
-        pro.daily_basic [“dv_ratio”]
+            DP：近 12 个月现金红利(按除息日计)/总市值
+            pro.daily_basic [“dv_ratio”]
 
+            FCFP：自由现金流(最新年报)/总市值
+            自由现金流：pro.cashflow [“free_cashflow”]
+            总市值：pro.daily_basic [“total_mv”]
 
-        FCFP：自由现金流(最新年报)/总市值
-        自由现金流：pro. cashflow [“free_cashflow”]
-        总市值：pro. daily_basic [“total_mv”]
-        :return:
+        :return: 添加以上因子
         """
-        df_finance = self.finance_data.loc[:, ["ebit", "ocfps", "revenue",
-                                               "n_cashflow_act", "free_cashflow"]].copy()
+        df_finance = self.finance_data.loc[:, ["ebit",
+                                               "ocfps",
+                                               "revenue",
+                                               "n_cashflow_act",
+                                               "free_cashflow"]].copy()
 
         df_daily = self.daily_data.loc[:, ["total_mv"]].copy()
         df_tmpt = pd.merge(df_finance, df_daily, how='outer',
                            left_index=True, right_index=True)
         df_tmpt = df_tmpt.fillna(method='bfill')
+
         df_tmpt["EBIT2EV"] = df_tmpt["ebit"] / df_tmpt['total_mv']
+
         df_tmpt["OCFP"] = df_tmpt["ocfps"] / df_tmpt['total_mv']
+
         df_tmpt["SP"] = df_tmpt["revenue"] / df_tmpt['total_mv']
+
         df_tmpt["NCFP"] = df_tmpt["n_cashflow_act"] / df_tmpt['total_mv']
+
         df_tmpt["FCFP"] = df_tmpt["free_cashflow"] / df_tmpt['total_mv']
 
         df_tmpt_new = df_tmpt.iloc[:, -5:].copy()
@@ -649,71 +713,94 @@ class Factor_Data(object):
         self.factors = pd.merge(self.factors, dv_ratio, how='outer',
                                 left_index=True, right_index=True)
 
-    def fa_ProfitGrowth_YOY(self):
-        """
-        ProfitGrowth_YOY
-        净利润增长率（季度同比）
-        :return:
-        """
-        df_finance = self.finance_data["q_profit_yoy"].copy()
-        self.factors = pd.merge(self.factors, df_finance, how='outer',
-                                left_index=True, right_index=True)
-
-    def fa_PPReversal(self):
-        """
-        PPReversal
-        5日均价/60日成交均价
-        :return:
-        """
-        df_daily = self.daily_data.loc[:, ["close"]].copy()
-        # df_daily = daily_data.loc[:,["close"]].copy()
-
-        df_daily["avg_return_5"] = df_daily["close"].rolling(5, axis=0).mean()
-        df_daily["avg_return_60"] = df_daily["close"].rolling(60, axis=0).mean()
-        df_daily["PPReversal"] = df_daily["avg_return_5"] / df_daily["avg_return_60"]
-        df_tmpt = df_daily.iloc[:, -1:].copy()
-
-        self.factors = pd.merge(self.factors, df_tmpt, how='outer',
-                                left_index=True, right_index=True)
-
-    def fa_TO_Nd(self):
-
-        df_daily = self.daily_data.loc[:, ["turnover_rate_f"]].copy()
-        # df_daily = daily_data["turnover_rate_f"].copy()
-
-        df_daily["TO_20d"] = df_daily["turnover_rate_f"].rolling(20, axis=0).mean()
-        df_tmpt = df_daily.iloc[:, -1:].copy()
-
-        self.factors = pd.merge(self.factors, df_tmpt, how='outer',
-                                left_index=True, right_index=True)
-
     def fa_MV(self):
+        """
+        因子：
+            MV 总市值
+        :return:
+        """
         df_daily = self.daily_data.loc[:, ["total_mv"]].copy()
 
         self.factors = pd.merge(self.factors, df_daily, how='outer',
                                 left_index=True, right_index=True)
 
+    # 技术因子
+    def fa_PPReversal(self):
+        """
+        因子：
+            PPReversal_1     1日均价/60日成交均价
+            PPReversal_5     5日均价/60日成交均价
+            PPReversal_20    20日均价/60日成交均价
+
+        :return:添加以上因子
+        """
+        df_daily = self.daily_data.loc[:, ["close"]].copy()
+        # df_daily = daily_data.loc[:,["close"]].copy()
+
+        df_daily["avg_return_1"] = df_daily["close"]
+        df_daily["avg_return_5"] = df_daily["close"].rolling(5, axis=0).mean()
+        df_daily["avg_return_20"] = df_daily["close"].rolling(20, axis=0).mean()
+        df_daily["avg_return_60"] = df_daily["close"].rolling(60, axis=0).mean()
+
+        df_daily["PPReversal_1"] = df_daily["avg_return_1"] / df_daily["avg_return_60"]
+        df_daily["PPReversal_5"] = df_daily["avg_return_5"] / df_daily["avg_return_60"]
+        df_daily["PPReversal_20"] = df_daily["avg_return_20"] / df_daily["avg_return_60"]
+
+        df_tmpt = df_daily.iloc[:, -3:].copy()
+
+        self.factors = pd.merge(self.factors, df_tmpt, how='outer',
+                                left_index=True, right_index=True)
+
+    def fa_TO_Nd(self):
+        """
+        因子：
+            TO_5d    以流通股本计算的5日日均换手率
+            TO_20d   以流通股本计算的20日日均换手率
+            TO_100d  以流通股本计算的100日日均换手率
+        :return:
+        """
+        df_daily = self.daily_data.loc[:, ["turnover_rate_f"]].copy()
+        # df_daily = daily_data["turnover_rate_f"].copy()
+
+        df_daily["TO_5d"] = df_daily["turnover_rate_f"].rolling(20, axis=0).mean()
+        df_daily["TO_20d"] = df_daily["turnover_rate_f"].rolling(20, axis=0).mean()
+        df_daily["TO_100d"] = df_daily["turnover_rate_f"].rolling(20, axis=0).mean()
+
+        df_tmpt = df_daily.iloc[:, -3:].copy()
+
+        self.factors = pd.merge(self.factors, df_tmpt, how='outer',
+                                left_index=True, right_index=True)
+
+
+
     def process(self):
+        """
+        调用成员函数，下载因子数据，计算因子值
+        :return:
+        """
+
+        # 下载因子数据
         self.get_daily_data()
         self.get_monthly_data()
         self.get_index_daily_data()
         self.get_finance_data()
 
+        # 计算因子值
         self.fa_monthly_return()
         self.fa_monthly_avg_turnover_return()
         self.fa_turnover()
-        # self.fa_wgt_turnover()
-        self.fa_daily_return()
+        self.fa_wgt_turnover()
+        # self.fa_daily_return()
         self.fa_std_Nm()
         self.fa_id_std_Nm()
         self.fa_turnover_volatility()
         self.fa_VSTD()
-        self.fa_DAVOL5()
+        self.fa_DAVOL_N()
         self.fa_fin_fat()
         self.fa_grow_fat()
-        self.fa_BP_LF()
-        self.fa_EBIT2EV()
         self.fa_ProfitGrowth_YOY()
+        self.fa_BP_LF()
+        self.fa_appraisement()
         self.fa_PPReversal()
         self.fa_TO_Nd()
-        self.fa_MV()
+

@@ -310,9 +310,23 @@ df_daily_basic = self.daily_data.loc[:, ["total_assets", "total_liab", "total_mv
             df_finance = pd.merge(df_finance, df3, how='outer',
                                   left_index=True, right_index=True)
             finance_data = df_finance
+
+pd_income = pro.income(ts_code=code,
+                                    start_date=start,
+                                    end_date=end,
+                                    fields='end_date,n_income_attr_p,revenue')
+
+        pd_income["end_date"] = pd.to_datetime(pd_income["end_date"],
+                                               format='%Y%m%d')
+        pd_income.index = pd_income["end_date"]
+        pd_income.sort_index(inplace=True)
+        pd_income["n_income_attr_p_q"] = pd_income["n_income_attr_p"].pct_change(periods=1)
+        pd_income["income_revenue_q"] = pd_income["revenue"].pct_change(periods=1)
+
+pd_income.columns
 daily_data = get_daily_data()
 df_daily = daily_data.loc[:,["turnover_rate_f"]].copy()
-start = '20100101'
+start = '20090101'
 end = '20191231'
 code = '000021.SZ'
 pro = ts.pro_api(token)
