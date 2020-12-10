@@ -193,10 +193,130 @@ df_tmpt = df_tmpt.fillna(method='bfill')
 df_tmpt["EBIT2EV"] = df_tmpt["ebit"] / df_tmpt['total_mv']
 
 
+# df0 ==>  income
+df0 = pro.income(ts_code=code,
+                      start_date=start,
+                      end_date=end,
+                      fields='ts_code,end_date,basic_eps,diluted_eps,ebit,revenue')
+
+df0["end_date"] = pd.to_datetime(df0["end_date"],
+                                 format='%Y%m%d')
+df0.index = df0["end_date"]
+df0.sort_index(inplace=True)
+
+# df1 == > fina_indicator
+df1 = pro.fina_indicator(ts_code=code,
+                              start_date=start,
+                              end_date=end,
+                              fields='ts_code,end_date,q_profit_yoy,ocfps,roe')
+df1["end_date"] = pd.to_datetime(df1["end_date"],
+                                 format='%Y%m%d')
+df1.index = df0["end_date"]
+df1.sort_index(inplace=True)
+
+# df2 == > cashflow
+df2 = pro.cashflow(ts_code=code,
+                        start_date=start,
+                        end_date=end,
+                        fields='ts_code,end_date,n_cashflow_act,free_cashflow')
+df2["end_date"] = pd.to_datetime(df2["end_date"],
+                                 format='%Y%m%d')
+df2.index = df2["end_date"]
+df2.sort_index(inplace=True)
+
+
+df_finance = pd.merge(df0, df1, how='outer',
+                      left_index=True, right_index=True)
+df_finance = pd.merge(df_finance, df2, how='outer',
+                      left_index=True, right_index=True)
+finance_data = df_finance
+
+df1 = pro.daily_basic(ts_code=code,
+                           start_date=start,
+                           end_date=end,
+                           fields='ts_code,'
+                                  'trade_date,'
+                                  'turnover_rate,'
+                                  'total_mv,'
+                                  'turnover_rate_f,'
+                                  'dv_ratio')
+df_daily_basic = self.daily_data.loc[:, ["total_assets", "total_liab", "total_mv"]].copy()
+        df_daily_basic["BP_LF"] = df_daily_basic['total_assets'] - df_daily_basic['total_liab']
+# df0 ==>  income
+            df0 = pro.income(ts_code=code,
+                                  start_date=start,
+                                  end_date=end,
+                                  fields='ts_code,'
+                                         'end_date,'
+                                         'basic_eps,'
+                                         'diluted_eps,'
+                                         'ebit,'
+                                         'revenue')
+
+            df0["end_date"] = pd.to_datetime(df0["end_date"],
+                                             format='%Y%m%d')
+            df0.index = df0["end_date"]
+            df0.sort_index(inplace=True)
+
+            # df1 == > fina_indicator
+            df1 = pro.fina_indicator(ts_code=code,
+                                          start_date=start,
+                                          end_date=end,
+                                          fields='ts_code,end_date,'
+                                                 'q_profit_yoy,'
+                                                 'ocfps,'
+                                                 'roe,'
+                                                 'opincome_of_ebt,'
+                                                 'ocf_to_or,'
+                                                 'currentdebt_to_debt,'
+                                                 'current_ratio,'
+                                                 'assets_turn')
+            df1["end_date"] = pd.to_datetime(df1["end_date"],
+                                             format='%Y%m%d')
+            df1.index = df1["end_date"]
+            df1.sort_index(inplace=True)
+
+            # df2 == > cashflow
+            df2 = pro.cashflow(ts_code=code,
+                                    start_date=start,
+                                    end_date=end,
+                                    fields='ts_code,'
+                                           'end_date,'
+                                           'n_cashflow_act,'
+                                           'free_cashflow,'
+                                           'n_cashflow_act')
+            df2["end_date"] = pd.to_datetime(df2["end_date"],
+                                             format='%Y%m%d')
+            df2.index = df2["end_date"]
+            df2.sort_index(inplace=True)
+
+            df3 = pro.balancesheet(ts_code=code,
+                                  start_date=start,
+                                  end_date=end,
+                                  fields='ts_code,'
+                                         'end_date,'
+                                         'total_assets')
+
+            df3["end_date"] = pd.to_datetime(df3["end_date"],
+                                             format='%Y%m%d')
+            df3.index = df3["end_date"]
+            df3.sort_index(inplace=True)
+
+
+            df_finance = pd.merge(df0, df1, how='outer',
+                                  left_index=True, right_index=True)
+            df_finance = pd.merge(df_finance, df2, how='outer',
+                                  left_index=True, right_index=True)
+            df_finance = pd.merge(df_finance, df3, how='outer',
+                                  left_index=True, right_index=True)
+            finance_data = df_finance
+daily_data = get_daily_data()
+df_daily = daily_data.loc[:,["turnover_rate_f"]].copy()
 start = '20100101'
 end = '20191231'
 code = '000021.SZ'
 pro = ts.pro_api(token)
 fd = Factor_Data()
 fd.process()
+daily_data = fd.daily_data
 factors = fd.factors
