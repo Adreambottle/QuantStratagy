@@ -12,7 +12,7 @@ from sqlalchemy import create_engine
 class Factor_Data(object):
 
     def __init__(self,
-                 start='20100101',
+                 start='20090101',
                  end='20191231',
                  code='000021.SZ', ):
         self.start = start
@@ -23,6 +23,8 @@ class Factor_Data(object):
         self.code = code
         self.factors = pd.DataFrame({'date': pd.date_range(self.start, self.end, freq='D')},
                                     index=pd.date_range(self.start, self.end, freq='D'))
+        # self.process()
+        self.factors = self.factors.fillna(method='bfill')
 
     def formulate_factor_full(self, df):
         """
@@ -177,6 +179,8 @@ class Factor_Data(object):
                                              format='%Y%m%d')
             df0.index = df0["end_date"]
             df0.sort_index(inplace=True)
+            df0.drop(["end_date"], axis=1, inplace=True)
+
 
             """
             # df1  ==>  fina_indicator
@@ -198,6 +202,8 @@ class Factor_Data(object):
                                              format='%Y%m%d')
             df1.index = df1["end_date"]
             df1.sort_index(inplace=True)
+            df1.drop(["end_date"], axis=1, inplace=True)
+
 
             """
             # df2  ==>  cashflow
@@ -215,6 +221,9 @@ class Factor_Data(object):
                                              format='%Y%m%d')
             df2.index = df2["end_date"]
             df2.sort_index(inplace=True)
+            df2.drop(["end_date"], axis=1, inplace=True)
+
+
 
             """
             # df3  ==>  balancesheet
@@ -232,13 +241,20 @@ class Factor_Data(object):
                                              format='%Y%m%d')
             df3.index = df3["end_date"]
             df3.sort_index(inplace=True)
+            df3.drop(["end_date"], axis=1, inplace=True)
 
+            """
+            将数据拼接在一起
+            """
             df_finance = pd.merge(df0, df1, how='outer',
                                   left_index=True, right_index=True)
             df_finance = pd.merge(df_finance, df2, how='outer',
                                   left_index=True, right_index=True)
             df_finance = pd.merge(df_finance, df3, how='outer',
                                   left_index=True, right_index=True)
+            df_finance["end_date"] = df_finance.index
+            df_finance = df_finance[~df_finance.index.duplicated(keep='first')]
+
             self.finance_data = df_finance
 
         except Exception as e:
@@ -283,9 +299,12 @@ class Factor_Data(object):
             resample('M', on='trade_date').mean()
 
         df_monthly = self.monthly_data.copy()
+        df_monthly = pd.merge(df_monthly, mon_avg_turnover, how='outer',
+                                left_index=True, right_index=True)
+        df_monthly.iloc[:,:6] = df_monthly.iloc[:,:6].fillna(method="ffill")
+        df_monthly = df_monthly.loc[mon_avg_turnover.index].copy()
 
-        mon_avg_turnover.index = df_monthly.index
-        mon_avg_turnover = mon_avg_turnover.iloc[:, 0]
+        mon_avg_turnover = df_monthly["turnover_rate"]
 
         df_monthly["wgt_return_1m"] = df_monthly['pct_chg'] / mon_avg_turnover  # 一个月
         df_monthly["wgt_return_3m"] = df_monthly['close'].pct_change(periods=3) / mon_avg_turnover  # 三个月
@@ -340,7 +359,10 @@ class Factor_Data(object):
                            left_index=True, right_index=True)
 
         df_tmpt = df_tmpt.fillna(method='bfill')
-        df_tmpt.columns = ["turnover_rate_M", "turnover_rate_3M", "turnover_rate_6M", "turnover_rate_Y"]
+        df_tmpt.columns = ["turnover_rate_M",
+                           "turnover_rate_3M",
+                           "turnover_rate_6M",
+                           "turnover_rate_Y"]
 
         df_tmpt["wgt_turn_1m"] = df_tmpt["turnover_rate_M"] / df_tmpt["turnover_rate_Y"]
         df_tmpt["wgt_turn_3m"] = df_tmpt["turnover_rate_3M"] / df_tmpt["turnover_rate_Y"]
@@ -426,15 +448,18 @@ class Factor_Data(object):
                     第一列是个股return，第二列是指数return
         :return: 返回的是残差residual的标准差
         """
-        arr = np.array(arr.iloc[:, [0, 1]])
-        x = arr[:, 0]
-        y = arr[:, 1]
+        if arr.empty:
+            return 0
+        else:
+            arr = np.array(arr.iloc[:, [0, 1]])
+            x = arr[:, 0]
+            y = arr[:, 1]
 
-        slope, intercept, r_value, p_value, std_err = linregress(x, y)
-        y_pred = x * slope + intercept
-        residual = y - y_pred
-        red_std_err = residual.std()
-        return red_std_err
+            slope, intercept, r_value, p_value, std_err = linregress(x, y)
+            y_pred = x * slope + intercept
+            residual = y - y_pred
+            red_std_err = residual.std()
+            return red_std_err
 
     def fa_id_std_Nm(self):
         """
@@ -762,9 +787,9 @@ class Factor_Data(object):
         df_daily = self.daily_data.loc[:, ["turnover_rate_f"]].copy()
         # df_daily = daily_data["turnover_rate_f"].copy()
 
-        df_daily["TO_5d"] = df_daily["turnover_rate_f"].rolling(20, axis=0).mean()
+        df_daily["TO_5d"] = df_daily["turnover_rate_f"].rolling(5, axis=0).mean()
         df_daily["TO_20d"] = df_daily["turnover_rate_f"].rolling(20, axis=0).mean()
-        df_daily["TO_100d"] = df_daily["turnover_rate_f"].rolling(20, axis=0).mean()
+        df_daily["TO_100d"] = df_daily["turnover_rate_f"].rolling(100, axis=0).mean()
 
         df_tmpt = df_daily.iloc[:, -3:].copy()
 

@@ -213,3 +213,5 @@ def pred_by_arch(data):
     yhat.variance.values[-1, :]
 
 
+
+
