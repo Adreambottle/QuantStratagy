@@ -90,3 +90,5 @@ def formulate_factor_full(df):
 
 def select_trading_date(df):
     Parallel(n_jobs=10)(delayed(my_fun)(i, j) for i in range(3) for j in range(3))
+
+

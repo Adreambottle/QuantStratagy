@@ -123,7 +123,6 @@ def store_daily_data():
 
 from N_Download_Factor import Factor_Data
 
-
 # 将交易数据储存在 MySQL 里面
 def store_factor_data():
     # 创建 MySQL 的链接
@@ -141,20 +140,38 @@ def store_factor_data():
 
     # 标记并储存无法访问和获取数据的股票代码
     SC_unavailable = []
+    SC_empty_data = []
 
-    # 记录自己的token
-    # token = 'd44cbc9ab3e7c25e5dfcbe6437ac061b125395567ad582806d02d38c'
 
     # 创建获取数据的api接口
     # pro = ts.pro_api(token)
 
     count = 0
-    start = '20090101'
+    start = '20070101'
     end = '20191231'
 
-    SC_in_pool[209]
+    # 记录自己的token
+    token = 'd44cbc9ab3e7c25e5dfcbe6437ac061b125395567ad582806d02d38c'
+
+    pro = ts.pro_api(token)
+    df_index = pro.index_daily(ts_code='399300.SZ',
+                                    start_date=start,
+                                    end_date=end,
+                                    fields='ts_code,'
+                                           'trade_date,'
+                                           'close')
+    df_index["trade_date"] = pd.to_datetime(df_index["trade_date"],
+                                            format='%Y%m%d')
+    df_index.index = df_index["trade_date"]
+    df_index.sort_index(inplace=True)
+    df_index.columns = ["index_code", "date", "price"]
+
+    pd.io.sql.to_sql(df_index, "Index_daily_data", con=conn, schema='factor', if_exists='replace')
+
     # 将每日数据储存到SQL中
-    for SC in SC_in_pool:
+    # for SC in SC_in_pool:
+    for i in range(6, len(SC_in_pool)):
+        SC = SC_in_pool[i]
 
         print("This is the {} and the code is {}. \n".format(count, SC))
         # SC = SC_in_pool[0]
@@ -163,13 +180,23 @@ def store_factor_data():
         # 将所有在股票池中的数据储存在 MySQL 中
         try:
             tmp_data = FD.factors
-            pd.io.sql.to_sql(tmp_data, SC, con=conn, schema='factor', if_exists='append')
+            if tmp_data.empty:
+                SC_empty_data.append(SC)
+            else:
+                pd.io.sql.to_sql(tmp_data, SC, con=conn, schema='factor', if_exists='replace')
 
         # 如果访问失败，将数据储存在 SC_unavailable 的列表中
         except:
             SC_unavailable.append(SC)
         count += 1
+
+    # 储存指数数据，用于获取自然交易日
+
+
 store_factor_data()
+
+
+
 
 # 从 MySQL 中读取一直股票的数据，并将股票的数据以 DataFrame 的形式导出
 
@@ -218,17 +245,3 @@ class Read_One_Stock():
         sqlcmd = sqlcmd + " FROM `{}`".format(self.SC_Code)
         table = pd.read_sql(sqlcmd, self.conn)
         return table
-
-
-def select_stock_pool():
-    conn = pymysql.connect(
-        host="localhost",
-        database="Stock",
-        user="root",
-        password="zzzzzzzz",
-        port=3306,
-        charset='utf8'
-    )
-    sqlcmd = "SELECT * FROM `Stock_Pool`"
-    table = pd.read_sql(sqlcmd, conn)
-    return table

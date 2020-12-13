@@ -23,7 +23,7 @@ class Factor_Data(object):
         self.code = code
         self.factors = pd.DataFrame({'date': pd.date_range(self.start, self.end, freq='D')},
                                     index=pd.date_range(self.start, self.end, freq='D'))
-        # self.process()
+        self.process()
         self.factors = self.factors.fillna(method='bfill')
 
     def formulate_factor_full(self, df):
@@ -806,26 +806,29 @@ class Factor_Data(object):
 
         # 下载因子数据
         self.get_daily_data()
-        self.get_monthly_data()
-        self.get_index_daily_data()
-        self.get_finance_data()
+        if self.daily_data.empty:
+            self.factor = pd.DataFrame()
+        else:
+            self.get_monthly_data()
+            self.get_index_daily_data()
+            self.get_finance_data()
 
-        # 计算因子值
-        self.fa_monthly_return()
-        self.fa_monthly_avg_turnover_return()
-        self.fa_turnover()
-        self.fa_wgt_turnover()
-        # self.fa_daily_return()
-        self.fa_std_Nm()
-        self.fa_id_std_Nm()
-        self.fa_turnover_volatility()
-        self.fa_VSTD()
-        self.fa_DAVOL_N()
-        self.fa_fin_fat()
-        self.fa_grow_fat()
-        self.fa_ProfitGrowth_YOY()
-        self.fa_BP_LF()
-        self.fa_appraisement()
-        self.fa_PPReversal()
-        self.fa_TO_Nd()
+            # 计算因子值
+            self.fa_monthly_return()
+            self.fa_monthly_avg_turnover_return()
+            self.fa_turnover()
+            self.fa_wgt_turnover()
+            # self.fa_daily_return()
+            self.fa_std_Nm()
+            self.fa_id_std_Nm()
+            self.fa_turnover_volatility()
+            self.fa_VSTD()
+            self.fa_DAVOL_N()
+            self.fa_fin_fat()
+            self.fa_grow_fat()
+            self.fa_ProfitGrowth_YOY()
+            self.fa_BP_LF()
+            self.fa_appraisement()
+            self.fa_PPReversal()
+            self.fa_TO_Nd()
 

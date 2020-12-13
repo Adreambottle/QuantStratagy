@@ -12,7 +12,7 @@ pro.daily(ts_code=code,
           start_date=start,
           end_date=end)
 
-FD = Factor_Data(code="002976.SZ")
+FD = Factor_Data(code="000021.SZ")
 FD.get_daily_data()
 FD.get_monthly_data()
 FD.get_finance_data()
@@ -22,6 +22,9 @@ daily_data = FD.daily_data
 monthly_data = FD.monthly_data
 finance_data = FD.finance_data
 index_data = FD.index_data
+
+factor = FD.factors
+factor.to_excel("/Users/meron/Desktop/factor.xlsx")
 
 
 df_daily_basic = daily_data.loc[:, ["trade_date", "turnover_rate"]].copy()
