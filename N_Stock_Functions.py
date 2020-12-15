@@ -30,7 +30,9 @@ class Read_One_Stock():
     def select_pct_chg(self):
         # 读取每天的收盘价
         sqlcmd = "SELECT trade_date, pct_chg FROM`{}`".format(self.SC_Code)
+        # sqlcmd = "SELECT trade_date, pct_chg FROM`{}`".format("000021.SZ")
         table = pd.read_sql(sqlcmd, self.conn)
+        # table = pd.read_sql(sqlcmd, conn)
         table["pct_chg"] = table["pct_chg"]/100
         table["trade_date"] = pd.to_datetime(table["trade_date"],
                                                 format='%Y%m%d')
@@ -62,11 +64,10 @@ def current_stocks(df_total, t):
     :return: 返回一个列表
     """
     t = "20100101"
-    t = datetime.strptime(t, '%Y%m%d')
+    t = datetime.datetime.strptime(t, '%Y%m%d')
     df_in_pool = df_total[df_total["list_date"] < t]["ts_code"].copy()
 
     return list(df_in_pool)
-
 
 
 

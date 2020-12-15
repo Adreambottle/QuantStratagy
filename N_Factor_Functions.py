@@ -165,7 +165,7 @@ def factor_formulate(data: pd.DataFrame, time='W'):
     factor_diff_in_date_w_avg = factor_diff_in_date.resample('W', on='date').mean()
     factor_diff_in_date_w_avg.columns = column_diff_in_date_avg[1:]
 
-    factor_same_in_date = data.loc[:, column_diff_in_date]
+    factor_same_in_date = data.loc[:, column_same_in_date]
     factor_same_in_date_w = factor_same_in_date.resample('W', on='date').mean()
 
     factor_w = pd.merge(factor_same_in_date_w, factor_diff_in_date_w_avg, how='outer',
@@ -175,7 +175,14 @@ def factor_formulate(data: pd.DataFrame, time='W'):
     factor_w = pd.merge(factor_w, factor_diff_in_date_w_min, how='outer',
                         left_index=True, right_index=True)
 
-    factor_w = factor_w.dropna(axis=0)
+    # factor_same_in_date_w.columns
+    # factor_diff_in_date_w_avg.columns
+    # factor_diff_in_date_w_max.columns
+    # factor_diff_in_date_w_min.columns
+    # factor_w.columns
+
+
+    # factor_w = factor_w.dropna(axis=0)
     factor_w.drop(["date_max", "date_min"], axis=1, inplace=True)
 
     return factor_w
@@ -212,7 +219,7 @@ def normalization_data(data: pd.DataFrame):
 
 def read_factor(SC):
 
-    SC = "000021.SZ"
+    # SC = "000021.SZ"
 
     # 这部分是主函数
     factor = Read_One_Stock_Factor(SC).select_all_data()

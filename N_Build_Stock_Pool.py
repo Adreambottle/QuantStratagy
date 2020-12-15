@@ -16,19 +16,19 @@ pymysql.install_as_MySQLdb()
 class Stock_Data(object):
     def __init__(self,
                  code='000021.SZ',
-                 start='20100101',
+                 start='20070101',
                  end='20191231'):
         self.start = start
         self.end = end
         self.code = code
         self.token = "d44cbc9ab3e7c25e5dfcbe6437ac061b125395567ad582806d02d38c"
         self.pro = ts.pro_api(self.token)
-        self.daily_data = pd.DataFrame({'date': pd.date_range(self.start, self.end, freq='D')},
-                                       index=pd.date_range(self.start, self.end, freq='D'))
-        daily_data = pd.DataFrame({'date': pd.date_range(start, end, freq='D')},
-                                  index=pd.date_range(start, end, freq='D'))
+        # self.daily_data = pd.DataFrame({'date': pd.date_range(self.start, self.end, freq='D')},
+        #                                index=pd.date_range(self.start, self.end, freq='D'))
+        # daily_data = pd.DataFrame({'date': pd.date_range(start, end, freq='D')},
+        #                           index=pd.date_range(start, end, freq='D'))
         self.daily()
-        self.daily_data = self.daily_data.fillna(method='bfill')
+        # self.daily_data = self.daily_data.fillna(method='bfill')
 
     # 获取股票代码列表
     def get_code(self):
@@ -64,10 +64,12 @@ class Stock_Data(object):
             # df3 = pro.adj_factor(ts_code=code, start_date=self.start, end_date=self.end)
             #
             # df = pd.merge(df0, df1, df2, df3)  # 合并数据
-            self.daily_data = pd.merge(self.daily_data, df_daily, how='outer',
-                                    left_index=True, right_index=True)
+            # self.daily_data = pd.merge(self.daily_data, df_daily, how='outer',
+            #                         left_index=True, right_index=True)
             # daily_data = pd.merge(daily_data, df_daily, how='outer',
             #                         left_index=True, right_index=True)
+
+            self.daily_data = df_daily
 
         except Exception as e:
             print(self.code + " is failed!")
@@ -205,7 +207,7 @@ def store_stock_data():
     # pro = ts.pro_api(token)
 
     count = 0
-    start = '20100101'
+    start = '20070101'
     end = '20191231'
 
     # 记录自己的token
@@ -229,7 +231,7 @@ def store_stock_data():
     df_index.sort_index(inplace=True)
     df_index.columns = ["index_code", "date", "price"]
 
-    pd.io.sql.to_sql(df_index, "Index_daily_data", con=conn, schema='stock', if_exists='replace')
+    pd.io.sql.to_sql(df_index, "Index_daily_data", con=conn, schema='stock', if_exists='append')
 
 
     """
@@ -254,7 +256,7 @@ def store_stock_data():
     """
     # for SC in SC_in_pool:
     for i in range(len(SC_in_pool)):
-
+        # i = 0
         SC = SC_in_pool[i]
 
         print("This is the {} and the code is {}. \n".format(count, SC))
@@ -264,10 +266,11 @@ def store_stock_data():
         # 将所有在股票池中的数据储存在 MySQL 中
         try:
             tmp_data = SD.daily_data
+            tmp_data.index.name = "index"
             if tmp_data.empty:
                 SC_empty_data.append(SC)
             else:
-                pd.io.sql.to_sql(tmp_data, SC, con=conn, schema='stock', if_exists='append')
+                pd.io.sql.to_sql(tmp_data, SC, con=conn, schema='stock', if_exists='replace')
 
         # 如果访问失败，将数据储存在 SC_unavailable 的列表中
         except:
