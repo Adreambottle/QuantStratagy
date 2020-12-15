@@ -178,6 +178,7 @@ for i in range(n, len(df_all)):
         generate_data_train.append(torch.squeeze(y).detach().numpy() * df_numpy_std + df_numpy_mean)
     else:
         generate_data_test.append(torch.squeeze(y).detach().numpy() * df_numpy_std + df_numpy_mean)
+
 plt.plot(df_index[n:train_end], generate_data_train, label='generate_train')
 plt.plot(df_index[train_end:], generate_data_test, label='generate_test')
 plt.legend()

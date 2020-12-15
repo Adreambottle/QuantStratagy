@@ -135,8 +135,10 @@ def time_series_analysis(data):
     ax1 = fig.add_subplot(211)
     ax2 = fig.add_subplot(212)
 
+    ax1.tile = "a"
     # 画出原图
     ax1.plot(data)
+
 
     # 计算data的一阶差分，查看相关的图像
     data_diff = data.diff()
@@ -155,6 +157,7 @@ def time_series_analysis(data):
     fig2 = sm.graphics.tsa.plot_pacf(data, lags=20, ax=ax4)
     plt.show()
 
+# time_series_analysis(f0)
 
 def pred_by_auto_arima(data):
     """

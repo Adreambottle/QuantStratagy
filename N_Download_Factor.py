@@ -181,7 +181,6 @@ class Factor_Data(object):
             df0.sort_index(inplace=True)
             df0.drop(["end_date"], axis=1, inplace=True)
 
-
             """
             # df1  ==>  fina_indicator
             # 财务指标数据
@@ -204,7 +203,6 @@ class Factor_Data(object):
             df1.sort_index(inplace=True)
             df1.drop(["end_date"], axis=1, inplace=True)
 
-
             """
             # df2  ==>  cashflow
             # 现金流量表
@@ -222,8 +220,6 @@ class Factor_Data(object):
             df2.index = df2["end_date"]
             df2.sort_index(inplace=True)
             df2.drop(["end_date"], axis=1, inplace=True)
-
-
 
             """
             # df3  ==>  balancesheet
@@ -300,8 +296,8 @@ class Factor_Data(object):
 
         df_monthly = self.monthly_data.copy()
         df_monthly = pd.merge(df_monthly, mon_avg_turnover, how='outer',
-                                left_index=True, right_index=True)
-        df_monthly.iloc[:,:6] = df_monthly.iloc[:,:6].fillna(method="ffill")
+                              left_index=True, right_index=True)
+        df_monthly.iloc[:, :6] = df_monthly.iloc[:, :6].fillna(method="ffill")
         df_monthly = df_monthly.loc[mon_avg_turnover.index].copy()
 
         mon_avg_turnover = df_monthly["turnover_rate"]
@@ -796,8 +792,6 @@ class Factor_Data(object):
         self.factors = pd.merge(self.factors, df_tmpt, how='outer',
                                 left_index=True, right_index=True)
 
-
-
     def process(self):
         """
         调用成员函数，下载因子数据，计算因子值
@@ -831,4 +825,3 @@ class Factor_Data(object):
             self.fa_appraisement()
             self.fa_PPReversal()
             self.fa_TO_Nd()
-
