@@ -53,6 +53,13 @@ class Read_One_Stock():
         table = pd.read_sql(sqlcmd, self.conn)
         return table
 
+    def select_value(self, column, time):
+
+        sqlcmd = "SELECT trade_date, " + column + "where index = "
+        sqlcmd = sqlcmd + time
+        sqlcmd = sqlcmd + " FROM `{}`".format(self.SC_Code)
+        table = pd.read_sql(sqlcmd, self.conn)
+        return table
 
 def current_stocks(df_total, t):
     """
