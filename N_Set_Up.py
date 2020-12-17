@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import tushare as ts
+import random
 
 from datetime import datetime
 
@@ -28,7 +29,7 @@ token = 'd44cbc9ab3e7c25e5dfcbe6437ac061b125395567ad582806d02d38c'
 
 pro = ts.pro_api(token)
 
-SC = '000021.SZ'
+SC = '002657.SZ'
 
 
 # 获取每次调仓的时间
@@ -47,6 +48,8 @@ df_total = df_total.loc[SC_in_pool, :]
 df_total = df_total.dropna(axis=0)
 df_total["list_date"] = pd.to_datetime(df_total["list_date"])
 
+# f_time_list = []
+
 for t_i in range(len(time_valid_index)):
     # t_i = 0
     time_tp = time_valid_index[t_i]
@@ -59,13 +62,35 @@ for t_i in range(len(time_valid_index)):
     # stock_in_pool = current_stocks(df_total, Sta_Time)
 
 
+    # 开始因子检验
+    factor_columns = factor_sample.columns
+    factor_index_drop_list = []
+    factor_name_drop_list = []
+
+    # f_for_one_stock = {}
 
 
+
+
+    # 建立打分dict
+    factor_score = {}
+    for name in factor_sample.columns:
+        factor_score[name] = 0
+
+
+
+    """
+    只是部分的股票用于选出因子
+    """
+    stock_sample_order = random.sample(list(range(len(stock_in_pool))), 3)
     # len(stock_in_pool)
-    for s_i in range(len(stock_in_pool)):
+    for s_i in stock_sample_order:
         # s_i = 0
 
         SC = SC_in_pool[s_i]
+        # SC = "000561.SZ"
+        print("这是股票", SC)
+
         ROS = SF.Read_One_Stock(SC)
         return_of_stock = ROS.select_pct_chg()
         return_of_total = pd.DataFrame({'date': pd.date_range('20070101', '20191231', freq='D')},
@@ -81,20 +106,58 @@ for t_i in range(len(time_valid_index)):
 
         factor_df = FF.read_factor(SC)
         factor_df_in_use = factor_df.loc[time_in_use_index, :]  #选取100次历史数据
+        factor_df_in_use.dropna(axis=1, inplace=True, how='all')
+
         # factor_df_in_use.shape
         # factor_df_in_use.columns
 
+        # column_test = np.random.randint(0, 100, 20)
+        # factor_test = factor_df_in_use.iloc[:, column_test]
+
+
+        # # 建立打分dict
+        # factor_score = {}
+        # for name in factor_sample.columns:
+        #     factor_score[name] = 0
+
+
         # 开始因子检验
-        factor_columns = factor_df.columns
-        factor_index_list = []
+        factor_columns = factor_df_in_use.columns
+        factor_index_drop_list = []
+        factor_name_drop_list = []
+
+        # f_for_one_stock = {}
+
+
         for f_i in range(len(factor_columns)):
             # f_i = 0
+            print("这是股票", SC, "这是因子", factor_columns[f_i])
+
+
             factor_name = factor_columns[f_i]
+            # print(f_i, factor_name)
             factor_X = factor_df_in_use[factor_name]
             factor_data_input = pd.merge(return_of_stock_in_use, factor_X, how='outer',
                         left_index=True, right_index=True)
             factor_data_input.columns = ["Stock_Return_Rate", "Factor_Value"]
             factor_data_input = factor_data_input.dropna(axis=0).copy()
+
+            # factor_name = factor_columns[f_i]
+            # # print(f_i, factor_name)
+            # factor_X = factor_df_in_use[factor_name]
+            # factor_new = MF.pred_by_LSTM_total(factor_X)
+            # factor_data_input = pd.merge(return_of_stock_in_use, factor_X, how='outer',
+            #                              left_index=True, right_index=True)
+            # factor_data_input.columns = ["Stock_Return_Rate", "Factor_Value"]
+            # factor_data_input = factor_data_input.dropna(axis=0).copy()
+            #
+            # slope, intercept, r_value, p_value, std_err = \
+            #     st.linregress(factor_data_input["Factor_Value"], factor_data_input["Factor_Value"])
+            # f = slope
+            #
+            # return_i_pred = slope * factor_new
+            # f_for_one_stock[factor_name] = f
+            # f_hist_list = f_time_list[t_i][]
 
 
             # t检验
@@ -102,65 +165,82 @@ for t_i in range(len(time_valid_index)):
             output = ols.fit()
             OLS_params = output.params[-1]       # 这个是什么东西
             OLS_t_test = output.tvalues[-1]      # 这个是t的值
-            if not True:
-                pass
+            OLS_p_value = output.pvalues[-1]      # 这个是t的值
 
+            # if abs(OLS_p_value):
+            #     factor_index_drop_list.append(f_i)
+            #     factor_name_drop_list.append(factor_name)
 
             # IRIC检验
             IC = st.pearsonr(factor_data_input["Stock_Return_Rate"], factor_data_input["Factor_Value"])[0]
-            if not True:
-                pass
+
+            if IC < 0.03:
+                factor_index_drop_list.append(f_i)
+                factor_name_drop_list.append(factor_name)
 
             # 平稳性检验
             t = sm.tsa.stattools.adfuller(factor_data_input["Factor_Value"])
-            if not True:
-                pass
+            # if False:
+                # factor_index_drop_list.append(f_i)
+                # factor_name_drop_list.append(factor_name)
 
+            # print(f_i, factor_name, OLS_p_value, IC, t[1])
+
+
+
+        factor_name_stay_list = []
+        for x in range(len(factor_columns)):
+            if factor_columns[x] not in factor_name_drop_list:
+                factor_name_stay_list.append(factor_columns[x])
+        factor_name_stay_list_reverse = factor_name_stay_list[::-1]
+        factor_df_stay_first = factor_df_in_use.loc[:, factor_name_stay_list]
+        factor_df_stay_first_reverse = factor_df_stay_first.loc[:,factor_name_stay_list_reverse]
         # 相关性检验
 
+        factor_name_valid_list = MF.get_var_no_colinear(0.9, factor_df_stay_first_reverse)
+        factor_df_valid = factor_df_in_use.loc[:, factor_name_valid_list]
 
 
-        for f_i in range(factor_sub.shape[1]):
-            # f_i = 4
-            x = factor.iloc[:,f_i]
-            x_new = MF.pred_by_LSTM_total(x)[0][0]
+        # 建立打分dict
+        # factor_score = {}
+        # for name in factor_name_valid_list:
+        #     factor_score[name] = 0
+
+        factor_pool = {}
+
+        # 用模型开始预测
+        for f_ii in range(factor_df_valid.shape[1]):
+            # f_ii = 0
+            factor_name = factor_name_valid_list[f_ii]
+            # print(f_i, factor_name)
+
+            factor_X = factor_df_in_use[factor_name]
+
+            factor_data_input = pd.merge(return_of_stock_in_use, factor_X, how='outer',
+                                         left_index=True, right_index=True)
+            factor_data_input.columns = ["Stock_Return_Rate", "Factor_Value"]
+            factor_data_input = factor_data_input.dropna(axis=0).copy()
+
+            slope, intercept, r_value, p_value, std_err = \
+                st.linregress(factor_data_input["Factor_Value"], factor_data_input["Factor_Value"])
+            f = slope
+
+            factor_new = MF.pred_by_LSTM_total(factor_data_input["Factor_Value"])[0, 0]
+
+            return_new = f * factor_new + intercept
 
 
+            factor_pool[factor_name] = return_new
+            # factor_score[factor_name] = factor_score[factor_name] + 1
 
-f0 = factor.iloc[:, 0]
-f1 = factor.iloc[:, 1]
-import statsmodels.api as sm
-def t_test(result,period,start_date,end_date,factor):
-    #获取申万一级行业数据
+        factor_pool_df = pd.DataFrame({"name":list(factor_pool.keys()),
+                                       "value":list(factor_pool.values())})
+        factor_pool_df.sort_values(by="value", ascending=False, inplace=True)
+        if factor_pool_df.shape[0] >= 20:
+            factor_name_selected = factor_pool_df.iloc[:20, 0]
+        else:
+            factor_name_selected = factor_pool_df.iloc[:, 0]
 
-    #生成空的dict，存储t检验、IC检验结果
-    WLS_params = {}
-    WLS_t_test = {}
-    IC = {}
+        for name in list(factor_name_selected):
+            factor_score[name] = factor_score[name] + 1
 
-    date_period = get_period_date(period,start_date,end_date)
-
-    for date in date_period[:-2]:
-        temp = result[result['date'] == date]
-        X = f0
-        Y = return_of_stock_valid
-        # WLS回归
-        wls = sm.WLS(Y, X, weights=temp['Weight'])
-        ols = sm.OLS(Y, X)
-        output = ols.fit()
-        WLS_params[date] = output.params[-1]
-        WLS_t_test[date] = output.tvalues[-1]
-        #IC检验
-        IC[date]=st.pearsonr(Y, temp[factor])[0]
-        print date+' getted!!!'
-
-    return WLS_params,WLS_t_test,IC
-
-
-
-from scipy import stats
-def get_ic(datas):
-    factors_name=[i for i in datas.columns.tolist() if i not in ['next_ret']]  #得到因子名
-    ic = datas.groupby(level=0).apply(lambda data: [stats.spearmanr(data[factor],data['next_ret'])[1] for factor in factors_name])  #得到的是以列表为值的序列
-    ic = pd.DataFrame(ic.tolist(), index=ic.index, columns=factors_name)  #得到各因子IC值,一个list为一个列
-    return ic

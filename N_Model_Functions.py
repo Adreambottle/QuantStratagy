@@ -12,6 +12,11 @@ from keras.models import Sequential
 from keras.layers import Dense, Dropout, LSTM
 
 
+import numpy as np
+import pandas as pd
+from statsmodels.stats.outliers_influence import variance_inflation_factor
+
+
 import seaborn as sns
 
 # sns.set(color_codes=True)
@@ -229,3 +234,55 @@ def pred_by_LSTM_total(data):
     predict_value = model.predict(x_test_new)
 
     return predict_value
+
+
+
+
+
+
+
+
+
+def get_var_no_colinear(cutoff, df):
+    """
+    选择出没有相关性的几个column
+    :param cutoff: 在相关系数大于cutoff的时候会drop column
+    :param df: 传入的Dataframe
+    :return:
+    """
+    corr_high = df.corr().applymap(lambda x: np.nan if x>cutoff else x).isnull()
+    col_all = corr_high.columns.tolist()
+    del_col = []
+    i = 0
+    while i < len(col_all)-1:
+        ex_index = corr_high.iloc[:,i][i+1:].index[np.where(corr_high.iloc[:,i][i+1:])].tolist()
+        for var in ex_index:
+            col_all.remove(var)
+        corr_high = corr_high.loc[col_all, col_all]
+        i += 1
+    return col_all
+
+# get_var_no_colinear(0.7, factor_test)
+
+
+
+
+## 每轮循环中计算各个变量的VIF，并删除VIF>threshold 的变量
+def vif(X, thres=10.0):
+    col = list(range(X.shape[1]))
+    dropped = True
+    while dropped:
+        dropped = False
+        vif = [variance_inflation_factor(X.iloc[:, col].values, ix)
+               for ix in range(X.iloc[:, col].shape[1])]
+
+        maxvif = max(vif)
+        maxix = vif.index(maxvif)
+        if maxvif > thres:
+            del col[maxix]
+            print('delete=', X.columns[col[maxix]], '  ', 'vif=', maxvif)
+            dropped = True
+    print('Remain Variables:', list(X.columns[col]))
+    print('VIF:', vif)
+    return list(X.columns[col])
+

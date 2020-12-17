@@ -7,9 +7,18 @@ from sqlalchemy import create_engine
 
 
 class Read_One_Stock_Factor():
+    """
+    从SQL里面读取一只股票的全部因子数据
+    """
 
     # 初始化数据，定义 MySQL 访问链接参数
     def __init__(self, SC_Code):
+        """
+        定义MySQL的连接方式
+        获取访问权限
+        :param SC_Code: SC是stock code
+                        根据股票的信息
+        """
         self.conn = pymysql.connect(
             host="localhost",
             database="factor",
@@ -22,6 +31,10 @@ class Read_One_Stock_Factor():
 
     # 获取每天的收盘价
     def select_all_data(self):
+        """
+        编写SQL语句，送SQL中选取全部的数据
+        :return:
+        """
         # 读取每天的收盘价
         sqlcmd = "SELECT * FROM`{}`".format(self.SC_Code)
         table = pd.read_sql(sqlcmd, self.conn)
@@ -40,6 +53,9 @@ class Read_One_Stock_Factor():
 
 
 class Read_Index():
+    """
+    获取指数信息，用于确定交易日还有其他和指数信息相关的信息
+    """
 
     # 初始化数据，定义 MySQL 访问链接参数
     def __init__(self):
@@ -95,7 +111,6 @@ def factor_formulate(data: pd.DataFrame, time='W'):
                            "SP",
                            "NCFP",
                            "FCFP",
-                           "dv_ratio",
                            "PPReversal_1",
                            "PPReversal_5",
                            "PPReversal_20",
@@ -219,7 +234,7 @@ def normalization_data(data: pd.DataFrame):
 
 def read_factor(SC):
 
-    # SC = "000021.SZ"
+    # SC = "000561.SZ"
 
     # 这部分是主函数
     factor = Read_One_Stock_Factor(SC).select_all_data()
@@ -241,3 +256,6 @@ def read_factor(SC):
     factor_n = normalization_data(factor_f)
 
     return factor_n
+
+
+# factor_df = read_factor(SC)
