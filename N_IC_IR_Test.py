@@ -6,7 +6,10 @@ import numpy as np
 import random
 import seaborn as sns
 import scipy.stats as st
+from datetime import datetime
 import matplotlib.pyplot as plt
+
+
 """
 对剩余的因子进行循环
 循环的内容是新的因子
@@ -25,7 +28,26 @@ SC_in_pool = Stock_code_pool['Stock_Code']
 
 # 设置抽取的股票池
 # stock_in_pool =
+factor_sample = FF.read_factor("000021.SZ")
+time_total_index = FF.Read_Index().index_data.resample('W', on="date").mean().index
+time_total_index_np = np.array(time_total_index)
 
+Sta_Time = "20100101"
+Sta_Time = datetime.strptime(Sta_Time, '%Y%m%d')
+time_valid_index = time_total_index[time_total_index > Sta_Time].copy()  # 每次调仓的时间点
+
+
+t_i = 0
+time_tp = time_valid_index[t_i]
+time_tp = np.datetime64(time_tp)
+time_on_tp_index_order = np.where(time_total_index_np == time_tp)[0][0]
+
+# 确定调仓日期，定下时间格式的Index
+time_in_use_index = time_total_index[time_on_tp_index_order - 100:time_on_tp_index_order]
+time_in_use_index = time_total_index[time_on_tp_index_order - 100:time_on_tp_index_order]
+
+End_Time = "20110101"
+time_valid_index = time_valid_index[time_valid_index < End_Time].copy()
 factor_name_valid_list = ['DAVOL20_min',
                           'DAVOL5_min',
                           'VSTD_6d_min',
@@ -56,7 +78,8 @@ factor_name_valid_list = ['DAVOL20_min',
                           'return_3m',
                           'return_1m']
 
-stock_sample_order = random.sample(list(range(len(stock_in_pool))), 20)
+
+stock_sample_order = random.sample(list(range(len(SC_in_pool))), 20)
 
 factor_pool = {}
 
@@ -198,18 +221,25 @@ for k in range(10):
 
     df_list.append(pccs_arr)
 
-a = np.zeros(df_list[0].shape)
+# 将生成的
+pccs_arr_df = pd.DataFrame(pccs_arr,
+                           columns=factor_name_valid_list)
+
+df_mean = np.zeros(df_list[0].shape)
 
 for i in range(10):
-    a += df_list[i]
-df_mean = a/10
+    df_mean += df_list[i]
+df_mean = df_mean/10
 
 df_df_mean = pd.DataFrame(df_mean, columns=factor_name_valid_list)
 df_df_mean.to_excel('df_mean.xlsx')
-len(df_list)
 
 
 
+
+"""
+计算每一只股票的IC值，将不同的IC值拼接在一个DataFrame中
+"""
 for i in range(len(df_list)):
     # i = 0
     df = pd.DataFrame(df_list[i], columns=factor_name_valid_list)
@@ -224,6 +254,7 @@ for i in range(len(df_list)):
         IC_std_error_df = pd.concat([IC_std_error_df, IC_std_error], axis=1)
 
 
+"""选出IC值大于0.03的值"""
 def larger_than_p(data:pd.Series):
     count = 0
     for i in range(len(data)):
@@ -256,33 +287,20 @@ df_output = pd.merge(IC_mean_mean, IC_std_mean, left_index=True, right_index=Tru
 df_output = pd.merge(df_output, IR_list, left_index=True, right_index=True, how='outer')
 df_output = pd.merge(df_output, larger_002, left_index=True, right_index=True, how='outer')
 
-IC_mean_mean.shape
-IC_std_mean.shape
+# IC_mean_mean.shape
+# IC_std_mean.shape
 # IR = [IC_mean_mean.iloc[i]/IC_std_mean.iloc[i] for i in range(len(IC_mean_mean))]
 
-# 将
+"""画出热力图"""
 pd.DataFrame(pccs_arr).plot.heatmap()
 # cmap = sns.cubehelix_palette(start = 1.5, rot = 3, gamma=0.8, as_cmap = True)
 # sns.heatmap(pt, linewidths = 0.05, vmax=900, vmin=0, cmap=cmap)
 
 # f, (ax1,ax2) = plt.subplots(figsize = (6,4),nrows=2)
 
-sns.heatmap(pccs_arr, linewidths = 0.05, vmax=0.5, vmin=-0.5, cmap='RdYlGn_r')
-
-pccs_arr_df = pd.DataFrame(pccs_arr, columns=factor_name_valid_list)
-sns.heatmap(pccs_arr_df, linewidths = 0.1, vmax=0.5, vmin=-0.5, cmap='RdYlGn_r')
 
 
-
-corr_list = []
-for i in range(factor_sub.shape[1]-1):
-    X = factor_sub.iloc[:-1, i]
-    R = factor_sub.iloc[1:, factor_sub.shape[1]]
-    corr = pearsonr(X, R)
-    corr_list.append(corr)
-
-
-
+"""加载两个数据分析的EDA模型"""
 def report_corr(df, table_name):
     from pandas_profiling import ProfileReport
     profile = ProfileReport(df, title='MPG Pandas Profiling Report')
@@ -300,10 +318,10 @@ len(list(factor_pool.keys()))
 
 pccs_arr_df.to_excel("IC_Value.xlsx")
 pccs_arr_df.apply(std_err)
-
 """
 画factor相关性热力图
 """
 factor_index = random.sample(list(range(20)), 20)
 data_report = data_use.iloc[:, factor_index]
 report_corr(data_report, "correlation_20")
+

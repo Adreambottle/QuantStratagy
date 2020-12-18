@@ -18,6 +18,12 @@ def calculate_ma_n(data, n):
 
 
 def calculate_ma_n(data, n):
+    """
+    移动平均
+    :param data: 传入的 DataFrame
+    :param n: 需要移动平均的数量
+    :return:
+    """
     ma_value = []
     for i in range(n):
         ma_value.append(None)
@@ -28,10 +34,18 @@ def calculate_ma_n(data, n):
 
 
 class Draw_Plots(object):
+    """
+    画股票相关的图
+    """
     def __init__(self, SC):
         self.SC = SC
 
     def draw_Kline(self):
+        """
+        画股票的K线图，需要传入四个数据
+        分别是["open", "close", "high", "low"]
+        :return: 画出图像
+        """
         Df_s1 = Read_One_Stock(self.SC).select_col("open", "high", "low", "close", "vol", "amount")
         length = Df_s1.shape[0]
         Df_s1.sort_values("trade_date", inplace=True)
@@ -86,6 +100,11 @@ class Draw_Plots(object):
         kline.render("./Plots/{} Candle Plot.html".format(self.SC))
 
     def draw_amount_bar(self):
+        """
+        画出股票的成交量和
+        需要传入的数据是股票的["amount"
+        :return:
+        """
         # SC = "000021.SZ"
         Df_s1 = Read_One_Stock(self.SC).select_col("vol", "amount")
         length = Df_s1.shape[0]

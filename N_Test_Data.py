@@ -209,10 +209,9 @@ order_dic_dic = {}
 for i in range(len(order_dic_list)):
     order_dic_dic[i] = order_dic_list[i]
 
-np.save('position.npy', position_dic_dic)
-np.save('order.npy', order_dic_dic_new)
 
-order_dic_dic[0]
+
+# order_dic_dic[0]
 
 order_dic_dic_new = {}
 for i in range(len(order_dic_dic.keys())):
@@ -225,6 +224,10 @@ for i in range(len(order_dic_dic_new[0].keys())):
     order_dic_dic_new[0][stock_name]['sell'] = 0
 
 
+
+"""
+传输数据
+"""
 
 df = pro.index_daily(ts_code='399300.SZ',
                      start_date='20100101',
@@ -246,12 +249,9 @@ np.save('time.npy', np.array(time_valid_index))
 np.save('index300.npy', hs300)
 
 
-
-
-
-
-
-
+"""
+找打每天的交易日
+"""
 
 def find_weekday(test_date):
     return datetime.strptime(test_date, "%Y%m%d").weekday()
@@ -265,6 +265,7 @@ for i in range(trade_date_on.shape[0]):
     # i = 0
     weekday = datetime.strptime(trade_date_on.iloc[i], "%Y%m%d").weekday()
     trade_date_weekday.append(weekday)
+
 
 trade_date_on = pd.DataFrame({"date": trade_date_on,
                               "weekday": trade_date_weekday})

@@ -1,25 +1,16 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-
 import statsmodels.api as sm
-
 from pmdarima import auto_arima
-
 from arch import arch_model
-
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, LSTM
-
-
 import numpy as np
 import pandas as pd
 from statsmodels.stats.outliers_influence import variance_inflation_factor
-
-
 import seaborn as sns
-
-# sns.set(color_codes=True)
+sns.set(color_codes=True)
 
 
 # seaborn设置背景
@@ -269,6 +260,13 @@ def get_var_no_colinear(cutoff, df):
 
 ## 每轮循环中计算各个变量的VIF，并删除VIF>threshold 的变量
 def vif(X, thres=10.0):
+    """
+    计算数据集的VIF值，即一个因子能多大程度上被其他因子进行解释
+    用于解决
+    :param X:
+    :param thres:
+    :return:
+    """
     col = list(range(X.shape[1]))
     dropped = True
     while dropped:

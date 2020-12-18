@@ -12,8 +12,12 @@ from sqlalchemy import create_engine
 pymysql.install_as_MySQLdb()
 
 
-# 爬取数据库
+
 class Stock_Data(object):
+    """
+    定义股票数据，
+    以一个Class的形式进行存储
+    """
     def __init__(self,
                  code='000021.SZ',
                  start='20070101',
@@ -32,18 +36,29 @@ class Stock_Data(object):
 
     # 获取股票代码列表
     def get_code(self):
+        """
+        获取股票交易代码
+        :return: 返回股票交易代码
+        """
         codes = pro.stock_basic(list_status='L').ts_code.values
         return codes
 
     # 获取股票交易日历
     def get_cals(self):
-        # 获取交易日历
+        """
+        获取交易日历
+        :return: 返回交易日信息
+        """
         cals = pro.trade_cal(exchange='')
         cals = cals[cals.is_open == 1].cal_date.values
         return cals
 
     # 每日行情数据
     def daily(self):
+        """
+        下载每日数据
+        :return:
+        """
         try:
             # 获取每日交易数据
             df_daily = pro.daily(ts_code=self.code, start_date=self.start, end_date=self.end)
@@ -94,6 +109,12 @@ from N_Download_Factor import Factor_Data
 
 # 将交易数据储存在 MySQL 里面
 def store_factor_data():
+    """
+    创建 MySQL 的链接
+    数据库是本机的数据库，访问账号是root， 地址是localhost
+    没有设置MySQL密码，服务器已经开放，可以通过ip地址进行访问
+    :return: 将从Tushare上下载的数据储存到SQL中
+    """
     # 创建 MySQL 的链接
     # 数据库是本机的数据库，访问账号是root， 地址是localhost
     conn = create_engine('mysql+mysqldb://root:zzzzzzzz@localhost:3306/factor?charset=utf8')
@@ -186,8 +207,13 @@ def store_factor_data():
 # store_factor_data()
 
 def store_stock_data():
-    # 创建 MySQL 的链接
-    # 数据库是本机的数据库，访问账号是root， 地址是localhost
+    """
+    创建 MySQL 的链接
+    数据库是本机的数据库，访问账号是root， 地址是localhost
+    没有设置MySQL密码，服务器已经开放，可以通过ip地址进行访问
+    :return: 将从Tushare上下载的数据储存到SQL中
+    """
+
     conn = create_engine('mysql+mysqldb://root:zzzzzzzz@localhost:3306/stock?charset=utf8')
 
     # 读取从 Wind 上分类的信息技术板块
@@ -284,13 +310,22 @@ store_stock_data()
 
 
 
-## 这部分要移到别的文件中
+"""
 # 从 MySQL 中读取一直股票的数据，并将股票的数据以 DataFrame 的形式导出
+"""
 
 class Read_One_Stock():
+    """
+    从MySQL中读取一直股票的数据
+    可以选择不同的读取的方式
+    """
 
     # 初始化数据，定义 MySQL 访问链接参数
     def __init__(self, SC_Code):
+        """
+        定义初始函数，需要传入mysql的connect信息
+        :param SC_Code:
+        """
         self.conn = pymysql.connect(
             host="localhost",
             database="Stock",
@@ -304,12 +339,20 @@ class Read_One_Stock():
     # 获取每天的收盘价
     def select_close_data(self):
         # 读取每天的收盘价
+        """
+        选择收盘价
+        :return:
+        """
         sqlcmd = "SELECT trade_date, close FROM`{}`".format(self.SC_Code)
         table = pd.read_sql(sqlcmd, self.conn)
         return table
 
     # 获取每天的开盘价
     def select_open_data(self):
+        """
+        选择开盘价
+        :return:
+        """
         # 读取每天的开盘价
         sqlcmd = "SELECT trade_date, open FROM`{}`".format(self.SC_Code)
         table = pd.read_sql(sqlcmd, self.conn)
@@ -318,12 +361,21 @@ class Read_One_Stock():
     # 获取每天的交易数量
     def select_vol_amount(self):
         # 读取每天的交易数量
+        """
+        选择交易数量
+        :return:
+        """
         sqlcmd = "SELECT trade_date, open FROM`{}`".format(self.SC_Code)
         table = pd.read_sql(sqlcmd, self.conn)
         return table
 
     # 获取想要获取的交易数据，可以自定义
     def select_col(self, *args):
+        """
+        选择特定的column
+        :param args:
+        :return:
+        """
         col_list = args
         sqlcmd = "SELECT trade_date, "
         for arg in args:
