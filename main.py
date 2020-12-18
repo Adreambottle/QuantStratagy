@@ -9,7 +9,7 @@ import tushare as ts
 import random
 
 from datetime import datetime
-from math import exp657
+from math import exp
 
 from sklearn.linear_model import LinearRegression
 import statsmodels.api as sm
@@ -306,12 +306,13 @@ def main(sta_time = "20100101", end_time = "20191231"):
                 """
                 用LSTM模型对新的因子值进行预测
                 """
-                # factor_new = MF.pred_by_LSTM_total(factor_data_input["Factor_Value"])[0, 0]
 
                 # 在测试的时候选用简单的线性回归
                 slope_f, intercept_f, r_value_f, p_value_f, std_err_f = \
                     st.linregress(list(range(factor_data_input.shape[0])), factor_data_input["Factor_Value"])
                 factor_new = slope_f * factor_data_input.shape[0] + intercept_f
+
+                factor_new = MF.pred_by_LSTM_total(factor_data_input["Factor_Value"])[0, 0]
 
                 # 计算出新的收益率
                 return_new = f * factor_new + intercept
@@ -426,12 +427,12 @@ def main(sta_time = "20100101", end_time = "20191231"):
                 """
                 进行LSTM模型来预测新的因子值
                 """
-                # factor_new = MF.pred_by_LSTM_total(factor_data_input_final["pct_chg"])[0, 0]
 
                 # 测试的时候采用简单线性模型进行预测
-                slope_f, intercept_f, r_value_f, p_value_f, std_err_f = \
-                    st.linregress(list(range(factor_data_input.shape[0])), factor_data_input["Factor_Value"])
-                factor_new = slope_f * factor_data_input.shape[0] + intercept_f
+                # slope_f, intercept_f, r_value_f, p_value_f, std_err_f = \
+                #     st.linregress(list(range(factor_data_input.shape[0])), factor_data_input["Factor_Value"])
+                # factor_new = slope_f * factor_data_input.shape[0] + intercept_f
+                factor_new = MF.pred_by_LSTM_total(factor_data_input_final["pct_chg"])[0, 0]
 
                 # 存储单因子模型计算出的单只股票收益率
                 factor_X_pred_dict[factor_name] = factor_new
