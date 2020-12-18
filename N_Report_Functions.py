@@ -1,6 +1,9 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import N_Factor_Functions as FF
+import N_Model_Functions as MF
+import N_Stock_Functions as SF
 import statsmodels.api as sm
 
 import numpy as np
@@ -8,51 +11,51 @@ import pandas as pd
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 
 
-def factor_test():
-    return_of_stock = ROS.select_pct_chg()
-    return_of_total = pd.DataFrame({'date': pd.date_range('20070101', '20191231', freq='D')},
-                                index=pd.date_range('20070101', '20191231', freq='D'))
-
-    return_of_total = pd.merge(return_of_total, return_of_stock, how='outer',
-                              left_index=True, right_index=True)
-    return_of_total = return_of_total.fillna(method='bfill')
-    return_of_test = return_of_total.loc[time_valid_index, :]
-    factor_of_test = factor_df.loc[time_valid_index, :]
-    # factor_of_test.to_excel("/Users/meron/Desktop/factor.xlsx")
-    data_of_test = pd.merge(return_of_test["pct_chg"], factor_of_test,
-                            left_index=True, right_index=True, how="outer")
-    data_of_test = data_of_test.fillna(method='bfill')
-    # pd.DataFrame(factor_columns).to_excel("/Users/meron/Desktop/factor_name.xlsx")
-
-
-
-
-    factor_df_in_use_wona = factor_df_in_use.dropna()
-
-    for f_i in range(len(factor_columns)):
-        # f_i = 0
-
-        factor_name = factor_columns[f_i]
-        # print(f_i, factor_name)
-        # factor_X = data_of_test[factor_name]
-        factor_data_input = data_of_test.loc[:,["pct_chg", factor_name]]
-        factor_data_input.columns = ["Stock_Return_Rate", "Factor_Value"]
-        factor_data_input = factor_data_input.dropna(axis=0).copy()
-
-        # t检验
-        ols = sm.OLS(factor_data_input["Stock_Return_Rate"], factor_data_input["Factor_Value"])
-        output = ols.fit()
-        OLS_params = output.params[-1]  # 这个是什么东西
-        OLS_t_test = output.tvalues[-1]  # 这个是t的值
-        OLS_p_value = output.pvalues[-1]   # 这个是p的值
-
-
-        # IRIC检验
-        IC = st.pearsonr(factor_data_input["Stock_Return_Rate"], factor_data_input["Factor_Value"])[0]
-        # if IC > 1:
-        #     factor_index_drop_list.append(f_i)
-        #     factor_name_drop_list.append(factor_name)
-        #     break
+# def factor_test():
+#     return_of_stock = ROS.select_pct_chg()
+#     return_of_total = pd.DataFrame({'date': pd.date_range('20070101', '20191231', freq='D')},
+#                                 index=pd.date_range('20070101', '20191231', freq='D'))
+#
+#     return_of_total = pd.merge(return_of_total, return_of_stock, how='outer',
+#                               left_index=True, right_index=True)
+#     return_of_total = return_of_total.fillna(method='bfill')
+#     return_of_test = return_of_total.loc[time_valid_index, :]
+#     factor_of_test = factor_df.loc[time_valid_index, :]
+#     # factor_of_test.to_excel("/Users/meron/Desktop/factor.xlsx")
+#     data_of_test = pd.merge(return_of_test["pct_chg"], factor_of_test,
+#                             left_index=True, right_index=True, how="outer")
+#     data_of_test = data_of_test.fillna(method='bfill')
+#     # pd.DataFrame(factor_columns).to_excel("/Users/meron/Desktop/factor_name.xlsx")
+#
+#
+#
+#
+#     factor_df_in_use_wona = factor_df_in_use.dropna()
+#
+#     for f_i in range(len(factor_columns)):
+#         # f_i = 0
+#
+#         factor_name = factor_columns[f_i]
+#         # print(f_i, factor_name)
+#         # factor_X = data_of_test[factor_name]
+#         factor_data_input = data_of_test.loc[:,["pct_chg", factor_name]]
+#         factor_data_input.columns = ["Stock_Return_Rate", "Factor_Value"]
+#         factor_data_input = factor_data_input.dropna(axis=0).copy()
+#
+#         # t检验
+#         ols = sm.OLS(factor_data_input["Stock_Return_Rate"], factor_data_input["Factor_Value"])
+#         output = ols.fit()
+#         OLS_params = output.params[-1]  # 这个是什么东西
+#         OLS_t_test = output.tvalues[-1]  # 这个是t的值
+#         OLS_p_value = output.pvalues[-1]   # 这个是p的值
+#
+#
+#         # IRIC检验
+#         IC = st.pearsonr(factor_data_input["Stock_Return_Rate"], factor_data_input["Factor_Value"])[0]
+#         # if IC > 1:
+#         #     factor_index_drop_list.append(f_i)
+#         #     factor_name_drop_list.append(factor_name)
+#         #     break
 
 def plot_ADF(factor_df_in_use_wona):
     """
